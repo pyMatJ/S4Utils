@@ -9,8 +9,6 @@ import sys, time
 import S4 as S4
 import numpy as np
 import matplotlib.pyplot as plt
-dirS4Utils = '/home/mathieu/Softwares/S4Utils/'
-sys.path.append(dirS4Utils)
 import MaterialFunctions as mat
 import S4Utils as S4Utils
 

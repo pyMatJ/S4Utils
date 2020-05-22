@@ -24,6 +24,7 @@ Documentation Contents
    :maxdepth: 2
    :caption: Contents:
 
+   Tutorials
 
 
 Indices and tables

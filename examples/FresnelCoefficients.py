@@ -19,7 +19,7 @@ lbda = 1e-6 ## say we compute at 1µm wavelength
 f = c_const/lbda ## ferquency in SI units
 f0 = f/c_const*1e-6 ## so the reduced frequency is f/c_const*a[SI units]
 
-Dimension = 3 # or 3
+Dimension = 3 # 2 or 3
 
 if Dimension == 2:
     ### 2 dimensional simulation, 1D lattice
@@ -39,11 +39,11 @@ eps_superstrate = n_superstrate**2 ## incicent medium permittivity
 n_substrate = 2 ## substrate index
 eps_substrate = n_substrate**2 ## substrate permittivity 
 
-S.SetMaterial(Name='Air', Epsilon = 1)
+S.SetMaterial(Name='Air', Epsilon = eps_superstrate)
 S.SetMaterial(Name='Substrate', Epsilon=eps_substrate)
 
-AirThick = 1
-SubThick = 1
+AirThick = 1 ## in reduced units, same scale as a
+SubThick = 1 ## in reduced units, same scale as a
 
 S.AddLayer(Name='Air', Thickness=AirThick, Material='Air')
 S.AddLayer(Name='Substrate', Thickness=SubThick, Material='Substrate')
@@ -97,7 +97,7 @@ for ii, thi in enumerate(theta):
 #####################
 ## Fresnel coefficients 
 th1 = np.deg2rad(theta)
-th2 = np.arcsin(n_superstrate/n_substrate*np.sin(np.deg2rad(th1)))
+th2 = np.arcsin(n_superstrate/n_substrate*np.sin(th1))
 Fresnel_Rte = ((n_superstrate*np.cos(th1)-n_substrate*np.cos(th2))/(n_superstrate*np.cos(th1)+n_substrate*np.cos(th2)))**2
 Fresnel_Rtm = ((n_superstrate*np.cos(th2)-n_substrate*np.cos(th1))/(n_superstrate*np.cos(th2)+n_substrate*np.cos(th1)))**2
 Fresnel_Tte = (n_substrate*np.cos(th2)/(n_superstrate*np.cos(th1)))*((2*n_superstrate*np.cos(th1))/(n_superstrate*np.cos(th1)+n_substrate*np.cos(th2)))**2

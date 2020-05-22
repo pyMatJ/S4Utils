@@ -33,7 +33,7 @@ eps_superstrate = n_superstrate**2 ## incicent medium permittivity
 n_slab = 2 ## substrate index
 eps_slab = n_slab**2 ## substrate permittivity 
 
-S.SetMaterial(Name='Air', Epsilon = 1)
+S.SetMaterial(Name='Air', Epsilon = eps_superstrate)
 S.SetMaterial(Name='Slab', Epsilon=eps_slab)
 
 AirThick = 1
