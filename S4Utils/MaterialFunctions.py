@@ -5,12 +5,7 @@ Created on Sat Mar 28 17:50:31 2020
 
 @author: Mathieu, Paul
 
-Various material definitiosn are available
-
-**Warning** 08/05/2020
-all definitions are not consistent in terms of imaginary part
-You have to ensure that you have a *positive* imaginary part for a *lossy* 
-material. np.conj solves your problems.
+Various material definitions are available
 """
 
 import numpy as np
@@ -29,10 +24,12 @@ c_const = 3e8
 def epsAu(f):
     """
     Au permittivity assuming a Drude metal
+    
     Parameters
     ----------
     f : 1D array
         frequency (Hz)
+    
     Returns
     -------
     eps : 1D array

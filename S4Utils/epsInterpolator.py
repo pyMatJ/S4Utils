@@ -6,7 +6,6 @@ Created on Mon Mar 30 09:12:22 2020
 @author: mathieu
 """
 import numpy as np
-#import matplotlib.gridspec as gridspec
 
 matdata = '/mnt/Data/ODIN/Calculs/MaterialData/'
 

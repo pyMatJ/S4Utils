@@ -5,12 +5,12 @@ Created on Fri Mar 27 13:29:48 2020
 
 @author: mathieu
 """
-import sys, time
+import time ## to time script execution
 import S4 as S4
 import numpy as np
 import matplotlib.pyplot as plt
-import MaterialFunctions as mat
-import S4Utils as S4Utils
+import S4Utils.S4Utils as S4Utils
+import S4Utils.MaterialFunctions as mat
 
 tstart = time.time()
 
@@ -25,8 +25,9 @@ f0 = f/c_const*1e-6
 px = 3.6
 ff = 0.8
 s = ff*px
+NBasis = 41
 S = S4.New(Lattice = px,
-           NumBasis = 41) ### NumBasis <=> halfnpw in RCWA
+           NumBasis = NBasis) ### NumBasis <=> halfnpw in RCWA
 
 ISBOn = False ## whether or not using a doped active region
 
@@ -74,10 +75,10 @@ else:
     Eps_list.append(epsGaAs)
     
 ### Layers
-S.AddLayer(Name='top', Thickness = DisplayThick, Material = 'Air')
-S.AddLayer(Name='TopGrating', Thickness = AuThick, Material = 'Air')
-S.AddLayer(Name='AR', Thickness = ARThick, Material = 'AR')
-S.AddLayer(Name='Bulk', Thickness = 2*AuThick, Material = 'Au')
+S.AddLayer(Name='top', Thickness = DisplayThick, Material = 'Air') ## incident medium, air
+S.AddLayer(Name='TopGrating', Thickness = AuThick, Material = 'Air') ## grating layer, will be patterned
+S.AddLayer(Name='AR', Thickness = ARThick, Material = 'AR') ## active region layer 
+S.AddLayer(Name='Bulk', Thickness = 2*AuThick, Material = 'Au') ## bottom mirror
 
 ### Geometry
 S.SetRegionRectangle(
@@ -99,36 +100,39 @@ S.SetOptions(
 #%%
 R = np.empty((len(theta),len(f)))
 
-ProgOrder = 0
-for ii, thi in enumerate(theta):
-    currOrder = int((ii*10)/len(theta))
-    if currOrder>ProgOrder:
-        print(currOrder)
-        ProgOrder = currOrder
-    ProgF = 0
-    for jj, fj in enumerate(f0):
-        currF = int((jj*10)/len(f0))
+ProgAngle = 0 ## progress in angle sweep
+for ii, thi in enumerate(theta): ## angle sweep
+    currAngle = int((ii*10)/len(theta)) ## current angle by 10% steps
+    if currAngle>ProgAngle:  
+        print(currAngle) # print progress every 10%
+        ProgAngle = currAngle
+    ProgF = 0  ## progress in frequency sweep
+    for jj, fj in enumerate(f0):  ## frequency sweep 
+        currF = int((jj*10)/len(f0)) ## current frequency by 10% steps
         if currF>ProgF:
-            print('\t %d'%currF)
+            print('\t %d'%currF) # print progress every 10%
             ProgF = currF
         
-        S.SetFrequency(fj)
-        S4Utils.UpdateMaterials(S, Mat_list, Eps_list, fj, f0)
+        S.SetFrequency(fj)  # set the current frequency 
+        S4Utils.UpdateMaterials(S, Mat_list, Eps_list, fj, f0) # set epsilons
         S.SetExcitationPlanewave(
                 IncidenceAngles=(thi,0.),
                 sAmplitude=0.,
-                pAmplitude=1.,
+                pAmplitude=1.,  ## p-pol plane wave
                 Order=0)
         inc, r = S.GetPowerFlux('top', 0.)
-        R[ii,jj] = np.abs(-r/inc)
+        R[ii,jj] = np.abs(-r/inc) ## reflectivity
     
 #%%
 if len(theta)==1:
     figsp = plt.figure()    
     ax = figsp.add_subplot(111)
-    ax.plot(f, R.T)
+    ax.plot(f, R.T, label='R')
     ax.set_xlabel('Frequency (Hz)')
     ax.set_ylabel('Reflectivity')
+    ax.set_title('Theta=%d, NumBasis=%d'%(theta[0], NBasis))
+    ax.legend(bbox_to_anchor=(1,1))
+    figsp.tight_layout()
 else:
     figdisp = plt.figure()
     axm = figdisp.add_subplot(111)
@@ -138,7 +142,9 @@ else:
                          vmin=0, vmax=1,
                          shading='None')
     axm.set_xlabel('pk$_{\parallel}$/$\pi$')
-    axm.set_ylabel('Frequency (cm$^{-1}$)')
+    axm.set_ylabel('Frequency (Hz)')
+    axm.set_title('NumBasis=%d'%NBasis)
+    figdisp.colorbar(cax,label='Reflectivity')
     figdisp.tight_layout()
 plt.show()
 

@@ -6,7 +6,8 @@ setup(
    description='Utilities function for the Python API of S4',
    author='Mathieu Jeannin, Paul Goulain',
    author_email='',
-   package_dir={"": "src"},
-   packages=[''],
-   install_requires=['numpy', 'scipy', 'matplotlib', 'pyvista'] #external packages as dependencies
+   package_dir={"S4Utils": "S4Utils"},
+   packages=['S4Utils'],
+   install_requires=['numpy', 'scipy', 'matplotlib', 'pyvista'], #external packages as dependencies
+   package_data={'S4Utils': ['S4Utils/MaterialData/*']},
 )

@@ -126,7 +126,7 @@ def GetSlice(S, ax1, ax2, axs=0, plane='xz', mode='Both'):
     position on the third.
     Point-by-point computation version.
     There is no built-in function for this, so it is much slower. However it is 
-    less ambiguous than the GetField_ methods and can be used to check/debug.
+    less ambiguous than the GetField methods and can be used to check/debug.
     
     Parameters
     ----------
