@@ -120,7 +120,7 @@ def GetField_yz(S, x, y, z, xs=0.0):
     return E_slice, H_slice
 
 
-def GetSlice(S, ax1, ax2, axs=0, plane='xz', mode='Both'):
+def GetSlice(S, ax1, ax2, axs=0, plane='xz', mode='All'):
     """
     Slice field and/or epsilon in an arbitrary slice along 2 axis at a given 
     position on the third.
@@ -187,6 +187,7 @@ class SlicePlot():
         vertical coordinate for the horizontal slice
     sym: bool
         whether to force symmetry in the colormap or leav it automated
+    
     Notes
     -----
     For a 3D stack of slices one should move to Plotly instead of 
@@ -199,14 +200,16 @@ class SlicePlot():
         
         figratio = 5 ## general aspect ratio of the graph
         
-        self.figslice = plt.figure() ## figure instance
-        gs = gridspec.GridSpec(2,2, width_ratios=[figratio,1], 
-                               height_ratios=[1,figratio])
-        gs2D = gridspec.GridSpecFromSubplotSpec(1,2, subplot_spec = gs[1,0],
-                                                width_ratios=[15,1])
+        self.figslice = plt.figure(constrained_layout=True) ## figure instance
+        gs = gridspec.GridSpec(2,3, width_ratios=[figratio/20, figratio, 1], 
+                               height_ratios=[1,figratio],
+                               figure=self.figslice)
+        # gs2D = gridspec.GridSpecFromSubplotSpec(1,2, subplot_spec = gs[1,0],
+        #                                         width_ratios=[1,15])
         
         ## the 2D plot with the plane slice
-        self.ax_2D = self.figslice.add_subplot(gs2D[0,0]) 
+        #self.ax_2D = self.figslice.add_subplot(gs2D[0,1]) 
+        self.ax_2D = self.figslice.add_subplot(gs[1,1]) 
         if sym:
             absmax = np.abs(Field).max() # for normalization purpose
             vmin = -absmax
@@ -217,12 +220,15 @@ class SlicePlot():
         self.cax = self.ax_2D.pcolormesh(a1m, a2m, Field,
                                vmin=vmin, vmax=vmax, # symmetrize
                                cmap = cmap)
-        axcbar = self.figslice.add_subplot(gs2D[0,1])
+        #self.axcbar = self.figslice.add_subplot(gs2D[0,0])
+        self.axcbar = self.figslice.add_subplot(gs[1,0])
         
         ## horizontal slice at a given position along a2
-        gs_a2slice = gridspec.GridSpecFromSubplotSpec(1,2, subplot_spec = gs[0,0],
-                                                      width_ratios=[15,1])
-        self.ax_a2slice = self.figslice.add_subplot(gs_a2slice[0,0], 
+        # gs_a2slice = gridspec.GridSpecFromSubplotSpec(1,2, subplot_spec = gs[0,0],
+        #                                               width_ratios=[1,15])
+        # self.ax_a2slice = self.figslice.add_subplot(gs_a2slice[0,1], 
+        #                                             sharex=self.ax_2D)
+        self.ax_a2slice = self.figslice.add_subplot(gs[0,1], 
                                                     sharex=self.ax_2D)
         if vcoord is None: # if None, target center
             a2cen = (a2.min()+a2.max())/2.
@@ -237,7 +243,7 @@ class SlicePlot():
             self.ax_a2slice.set_ylim([-absmax,absmax])
         
         ## vertical slice at a given position along a1
-        self.ax_a1slice = self.figslice.add_subplot(gs[1,1], 
+        self.ax_a1slice = self.figslice.add_subplot(gs[1,2], 
                                                     sharey=self.ax_2D)
         if hcoord is None: # if None target center
             a1cen = (a1.min()+a1.max())/2.
@@ -256,9 +262,19 @@ class SlicePlot():
         self.ax_2D.plot([a1.min(), a1.max()], [a2[a2slice], a2[a2slice]], 'k--')
         self.ax_2D.invert_yaxis()
         self.ax_2D.axis('tight')
+        self.ax_2D.set_xlabel('ax1')
+        self.ax_2D.set_ylabel('ax2')
+
+        self.figslice.colorbar(self.cax, cax=self.axcbar)
+        self.axcbar.tick_params(axis='y', labelleft=True,
+                                labelright=False,
+                                right=False,
+                                left=True)
+        self.axcbar.set_ylabel('Field')
+        self.axcbar.yaxis.set_label_position('left')
         
-        self.figslice.colorbar(self.cax, axcbar)
-        self.figslice.tight_layout()
+        #### since constrained_layout is used tight_layout is useless
+        # self.figslice.tight_layout()
 
 
 def Plot3DSlices(axes, points, Slices):

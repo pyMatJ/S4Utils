@@ -31,8 +31,8 @@ S = S4.New(Lattice = px,
 
 ISBOn = False ## whether or not using a doped active region
 
-theta = np.arange(0,90,5) ### for a dispersion plot
-# theta = [0] ## for a single spectrum
+# theta = np.arange(0,90,5) ### for a dispersion plot
+theta = [0] ## for a single spectrum
 
 epsAu = mat.epsAu(f)
 epsGaAs = mat.epsGaAs(f)
@@ -79,6 +79,7 @@ S.AddLayer(Name='top', Thickness = DisplayThick, Material = 'Air') ## incident m
 S.AddLayer(Name='TopGrating', Thickness = AuThick, Material = 'Air') ## grating layer, will be patterned
 S.AddLayer(Name='AR', Thickness = ARThick, Material = 'AR') ## active region layer 
 S.AddLayer(Name='Bulk', Thickness = 2*AuThick, Material = 'Au') ## bottom mirror
+TotalThick = DisplayThick+ARThick+3*AuThick ## total thickness of the simulation
 
 ### Geometry
 S.SetRegionRectangle(
@@ -123,7 +124,7 @@ for ii, thi in enumerate(theta): ## angle sweep
         inc, r = S.GetPowerFlux('top', 0.)
         R[ii,jj] = np.abs(-r/inc) ## reflectivity
     
-#%%
+#%% Plotting the results
 if len(theta)==1:
     figsp = plt.figure()    
     ax = figsp.add_subplot(111)
@@ -148,7 +149,43 @@ else:
     figdisp.tight_layout()
 plt.show()
 
-#%%
+#%% timing
 tstop = time.time()
 tscript = tstop-tstart
 print('Execution time %.2fs'%(tscript))
+
+#%% Plotting electric field
+########
+## Setting up the simulation
+fplot = 28.8e12 ## frequency at which we plot (SI)
+f0plot = fplot/c_const*1e-6 # reduced units
+S.SetFrequency(f0plot)
+S4Utils.UpdateMaterials(S, Mat_list, Eps_list, f0plot, f0) # update materials
+S.SetExcitationPlanewave(
+    IncidenceAngles=(0.,0.), ## normal incidence
+    sAmplitude=0.,
+    pAmplitude=1.,  ## p-pol plane wave
+    Order=0)
+########
+## Spatial coordinates for the plot
+resx = 150 ## x-resolution
+resz = 150 ## z-resolution
+x = np.linspace(-px/2, px/2, resx) ## x coordinates
+z = np.linspace(0, TotalThick, resz) ## z coordinates
+
+### compute electric and magnetic field
+E, H = S4Utils.GetSlice(S, ax1=x, ax2=z, plane='xz', mode='Field')
+FigEz = S4Utils.SlicePlot(x, z ,np.real(E[:,:,2]), hcoord=s/4)
+FigEz.ax_2D.set_ylabel('z')
+FigEz.ax_2D.set_xlabel('x')
+FigEz.axcbar.set_ylabel('Ez')
+
+## retrieve the recomposed permittivity 
+Eps_plot = S4Utils.GetSlice(S, ax1=x, ax2=z, plane='xz', mode='Epsilon')
+FigEps = S4Utils.SlicePlot(x, z, np.real(Eps_plot), cmap=plt.cm.bone,
+                           sym=False)
+FigEps.ax_2D.set_ylabel('z')
+FigEps.ax_2D.set_xlabel('x')
+FigEps.ax_a1slice.set_xlabel(r'$\varepsilon$')
+FigEps.ax_a2slice.set_ylabel(r'$\varepsilon$')
+FigEps.axcbar.set_ylabel(r'$\varepsilon$')

@@ -27,12 +27,12 @@ def epsAu(f):
     
     Parameters
     ----------
-    f : 1D array
+    f: 1D array
         frequency (Hz)
     
     Returns
     -------
-    eps : 1D array
+    eps: 1D array
         complex permittivity (len(f))
     """
     wp = 2*np.pi*2.17e15
@@ -45,11 +45,11 @@ def epsGaAs(f):
     GaAs permittivity assuming a Lorentz model with 2 phonons
     Parameters
     ----------
-    f : 1D array
+    f: 1D array
         frequency (Hz)
     Returns
     -------
-    eps : 1D array
+    eps: 1D array
         complex permittivity (len(f))
     """    
     wL =  292.1*2.99792458e10*2*np.pi
@@ -63,13 +63,15 @@ def epsAlGaAs(f, xAl):
     """
     AlGaAs permittivity assuming a double 2 phonons model
     following Adachi, J. Appl. Phys. 58 R1-R29 (1985), table I
+    
     Parameters
     ----------
-    f : 1D array
+    f: 1D array
         frequency (Hz)
+    
     Returns
     -------
-    eps : 1D array
+    eps: 1D array
         complex permittivity (len(f))
     """
     eps_i = 10.89-2.73*xAl # ioffe
@@ -85,13 +87,14 @@ def epsAlGaAs(f, xAl):
 def epsGaNx(f): 
     """
     Gallium nitride (GaN) ordinary axis permittivity (without excitons)
+    
     Parameters
     ----------
-    f : 1D array
+    f: 1D array
         frequency (Hz)
     Returns
     -------
-    eps : 1D array
+    eps: 1D array
         complex permittivity (len(f))
     """
     wlGaN      = 742.1*c_const*1e2*2*np.pi
@@ -105,8 +108,15 @@ def epsGaNz(f): # GaN extraordinary epsilon
     """
     Gallium nitride (GaN) extraordinary axis permittivity (without excitons)
 
-    :param array f: frequency (array or float)
-    :return: permittivity (float or len(f)-array)
+    Parameters
+    ------------
+    f: 1D array
+        frequency (Hz)
+    Returns
+    -------
+    eps: 1D array
+        complex permittivity (len(f))
+    
     """
     wlGaNz     = 732.5*c_const*1e2*2*np.pi
     wtGaNz     = 537*c_const*1e2*2*np.pi
@@ -120,8 +130,14 @@ def epsAlNx(f):
     """
     Aluminium nitride (AlN) ordinary axis permittivity (without excitons)
 
-    :param array f: frequency (array or float)
-    :return: permittivity (float or len(f)-array)
+    Parameters
+    ------------
+    f: 1D array
+        frequency (Hz)
+    Returns
+    -------
+    eps: 1D array
+        complex permittivity (len(f))
     """
     wlAlN     = 909.6*c_const*1e2*2*np.pi
     wtAlN     = 667.2*c_const*1e2*2*np.pi
@@ -134,8 +150,14 @@ def epsAlNz(f):
     """
     Aliuminium nitride (AlN) extraordinary axis permittivity (without excitons)
 
-    :param array f: frequency (array or float)
-    :return: permittivity (float or len(f)-array)
+    Parameters
+    ------------
+    f: 1D array
+        frequency (Hz)
+    Returns
+    -------
+    eps: 1D array
+        complex permittivity (len(f))
     """
     wlAlNz     = 888.9*c_const*1e2*2*np.pi
     wtAlNz     = 608.5*c_const*1e2*2*np.pi
@@ -150,6 +172,7 @@ def epsZal(f, eps_w, eps_b, omega_isb, gamma_isb, omega_p, fw, f12=0.96):
     """
     Zaluzny model for an active region composed of square QWs (eps_w) and 
     barriers (eps_b)
+    
     Parameters
     ----------
     f : 1D array or float
@@ -192,11 +215,21 @@ def epsPQW(f):
     """
     Doped Parabolic Quantum Well permittivity
     Paul?
+    
+    Parameters
+    ----------
+    f: 1D array
+    
+    Returns
+    -------
+    None
+    
     """
     
 def epsDrude(f, fp, gammap, epsinf=1.0):
     """
     Drude model for a material with free electrons
+    
     Parameters
     ----------
     f : 1D array
@@ -207,6 +240,7 @@ def epsDrude(f, fp, gammap, epsinf=1.0):
         damping (collision rate) 
     epsinf : float
         high-frenquency permittivity. Defaults to 1.0 (metal).
+    
     Returns
     -------
     eps : len(f) array
@@ -219,6 +253,7 @@ def epsDrude(f, fp, gammap, epsinf=1.0):
 def eps2Phonons(f, wT, wL, gammaT, gammaL, eps_inf):
     """
     2 phonons model for a semiconductor material 
+    
     Parameters
     ----------
     f : 1D array
@@ -233,6 +268,7 @@ def eps2Phonons(f, wT, wL, gammaT, gammaL, eps_inf):
         Longitudinal phonon damping rate (rad/s)
     eps_inf : float
         high-frenquency permittivity. Defaults to 1.0 (metal).
+    
     Returns
     -------
     eps : len(f) array
@@ -244,6 +280,7 @@ def eps2Phonons(f, wT, wL, gammaT, gammaL, eps_inf):
 def epsLorentzPhonon(f, wT, wL, gamma, eps_inf):
     """
     Lorentz phonon model for a semiconductor material 
+    
     Parameters
     ----------
     f : 1D array
@@ -256,6 +293,7 @@ def epsLorentzPhonon(f, wT, wL, gamma, eps_inf):
         Phonon damping rate (rad/s)
     eps_inf : float
         high-frenquency permittivity. Defaults to 1.0 (metal).
+    
     Returns
     -------
     eps : len(f) array
@@ -271,6 +309,7 @@ def epsLorentzPhonon(f, wT, wL, gamma, eps_inf):
 def omegaP_2D(N2D, meff, eps_i, w_QW):
     """
     Plasma pulsation (in units of rad/s) for an equivalent 2D doping N2D
+    
     Parameters
     ----------
     N2D : float
@@ -281,6 +320,7 @@ def omegaP_2D(N2D, meff, eps_i, w_QW):
         high-frequency permittivity
     w_QW : float
         quantum well thickness (m)
+    
     Returns
     -------
     wp : float
@@ -292,6 +332,7 @@ def omegaP_2D(N2D, meff, eps_i, w_QW):
 def omegaP_3D(N3D, meff, eps_i):
     """
     Plasma pulsation (in units of rad/s) for an equivalent 3D doping N3D
+    
     Parameters
     ----------
     N3D : float
@@ -300,6 +341,7 @@ def omegaP_3D(N3D, meff, eps_i):
         effective mass coefficient (no units)
     eps_i : float
         high-frequency permittivity
+    
     Returns
     -------
     wp : float

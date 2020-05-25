@@ -11,6 +11,30 @@ matdata = '/mnt/Data/ODIN/Calculs/MaterialData/'
 
 
 def eps_interpolator(f, fp, x1, x2, nk=False):
+    """
+    Returns the complex permittivity interpolated from tabulated data, either 
+    in (n,k) files or in (eps1,eps2) files.
+
+    Parameters
+    ----------
+    f : 1D array
+        1D array of frequency at which to interpolate the data
+    fp : 1D array
+        Array of frequency for the tabulated data
+    x1 : 1D array
+        Array of tabulated data (n or eps1)
+    x2 : 1D array
+        Array of tabulated data (k or eps2)
+    nk : Bool, optional
+        Flag. True if the data is in (n,k) form, False if in (eps1, eps2) form. 
+        Defaults to False
+
+    Returns
+    -------
+    eps : 1D array
+        1D array of (complex) permittivity (len(f))
+
+    """
     if nk==False:
         return np.interp(f, fp, x1)+1.0j*np.interp(f, fp, x2)
     else:
@@ -54,6 +78,20 @@ def eps_GaAs(f):
     return eps_interpolator(f, fGaAs, nGaAs, kGaAs, nk=True)
 
 def eps_Au(f):
+    """
+    Ordal tabulated values for gold
+
+    Parameters
+    ----------
+    f : 1D array
+        Frequency
+
+    Returns
+    -------
+    eps : 1D array
+        Complex permittivity of Au (Ordal tabulated data)
+
+    """
     fAu, nAu = np.genfromtxt(matdata+'/Bulk/Au_n_Ordal.txt', 
                              skip_header=1, unpack=True)
     fAu, kAu = np.genfromtxt(matdata+'/Bulk/Au_k_Ordal.txt', 

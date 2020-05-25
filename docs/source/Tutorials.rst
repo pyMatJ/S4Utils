@@ -107,7 +107,7 @@ The bulk of the calculation is in the main loop over the angle of incidence::
 
 The exciting wave properties are set through the `S4.SetExcitationPlanewave <https://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.SetExcitationPlanewave>`_ method. The arguments are the couple of incidence angles (theta,phi) in spherical coordinates which represent the polar angle and the azimuthal angle. (Note that the S4 documentation uses the opposite denomination), the amplitude of the `s`- and `p`-components of the electric field, and the order (defaults to 0, see doc). Note that here we use the ``enumerate`` function from python which allows us to pass directly the local variable ``thi`` to the plane wave function. 
 
-We use the method `S.GetPowerFlux <https://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetPowerFlux>`_ which returns the integral of the `z`component 
+We use the method `S.GetPowerFlux <https://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetPowerFlux>`_ which returns the integral of the `z` component 
 of the Poynting vector over unit cell surface normal to the `z` direction, decomposed into forward and backward propagating modes. Hence, the incident and reflected power is obtained using::
 
     inc, r = S.GetPowerFlux(Layer='Air',zOffset=0)
@@ -290,9 +290,9 @@ where we plot the reflection and transmission. We compare the computed absorptio
 Tutorial 4: Dispersive Metal-Insulator-Metal grating with a doped quantum wells active region
 ----------------------------------------------------------------------------------------------
 
-As a last tutorial, we focus on the optical properties of 1D rectangular metallic gratings under TM excitation. The example file can be found under `examples/MIM_DispersiveGrating.py <../../../examples/MIM_DispersiveGrating.py>`_. This example demonstrates the first patterning method, and shows some of the more complex S\ :sup:`4` options. In addition, it shows some of the utilities functions from ``S4Utils`` to make the python API more user friendly.
+As a last tutorial, we focus on the optical properties of 1D rectangular metallic gratings under TM excitation. The example file can be found under `examples/MIM_DispersiveGrating.py <../../../examples/MIM_DispersiveGrating.py>`_. This example demonstrates the first patterning method, and shows some of the more complex S\ :sup:`4` options. In addition, it shows some of the utilities functions from :py:mod:`S4Utils` to make the python API more user friendly.
 
-To install the ``S4Utils`` package, refer to the :ref:`Installation` section. 
+To install the :py:mod:`S4Utils` package, refer to the :ref:`Installation` section. 
 
 We import the necessary packages::
 
@@ -364,7 +364,7 @@ Here the active region permittivity is a tensor with diagonal elements :math:`\v
 
 .. note:: The shape of the tensor can either be ``3x3xlen(f)`` or ``len(f)x3x3`` 
 
-As we wish to use dispersive materials, we will need to update their permittivity each time the frequency of the simulation is changed. A utility function is available in ``S4Utils`` to take care of this for all dispersive materials in the simulation: :py:func:`S4Utils.S4Utils.UpdateMaterials`, which we will use later in the script. 
+As we wish to use dispersive materials, we will need to update their permittivity each time the frequency of the simulation is changed. A utility function is available in :py:mod:`S4Utils` to take care of this for all dispersive materials in the simulation: :py:func:`S4Utils.S4Utils.UpdateMaterials`, which we will use later in the script. 
 
 The materials are set as usual, and we initialize the dispersive materials with the first value of the permittivity array::
 
@@ -498,3 +498,62 @@ which leads e.g. for a normal incidence:
 or a dispersion with a 5° step which runs in around 3min on a laptop:
 
 .. image:: MIM_DispersionPlot.png
+
+Having computed the spectum, we might want to look at the field distribution in the structure. The python API directly provides some functions to compute the electric field from a given simulation, especially `S.GetFields <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetFields>`_ and `S.GetFieldsOnGrid <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetFieldsOnGrid>`_. The first one computes the electric and magnetic field tensors at a *single* given point in space, while the second computes the electric and magnetic fields tensors on an :math:`x-y`slice at a given :math:`z` coordinate. **This function thus only returns correct values in 3D simulations**. To make the computations and visualizations easier, :py:mod:`S4Utils` provides a set of functions to extract electric and magnetic field profiles along slices and plot them in a practical visualization environment. Additionally, it also provides a way to extract the reconstructed permittivity profile using `S.GetEpsilon <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetEpsilon>`_, to help extract an image of the geometry, which can sometimes be hard to picture. This also provides a sense of the spatial resolution of the permittivity decomposition.
+
+Say we want to visualize the profile of the vertical component of the electric field at the 28.8 THz resonance upon normal incidence excitation. We set up the simulation::
+
+    fplot = 28.8e12 ## frequency at which we plot (SI)
+    f0plot = fplot/c_const*1e-6 # reduced units
+    S.SetFrequency(f0plot)
+    S4Utils.UpdateMaterials(S, Mat_list, Eps_list, f0plot, f0) # update materials
+    S.SetExcitationPlanewave(
+        IncidenceAngles=(0.,0.), ## normal incidence
+        sAmplitude=0.,
+        pAmplitude=1.,  ## p-pol plane wave
+        Order=0)
+
+and define the grid coordinates on which we want to extract the field::
+
+    resx = 150 ## x-resolution
+    resz = 150 ## z-resolution
+    x = np.linspace(-px/2, px/2, resx) ## x coordinates
+    z = np.linspace(0, TotalThick, resz) ## z coordinates
+
+Here we choose to plot the field on a single period, however since S\ :sup:`4` takes care of the periodicity by itself, we could have set arbitrary values for the x-coordinates and plot over several periods. Since this is a 2D simulation, we have to use ``S.GetFields`` and loop over each coordinate points. This is well take care of by :py:func:`S4Utils.S4Utils.GetSlice`::
+
+    E, H = S4Utils.GetSlice(S, ax1=x, ax2=z, plane='xz', mode='Field')
+    FigEz = S4Utils.SlicePlot(x, z ,np.real(E[:,:,2]), hcoord=s/4)
+    FigEz.ax_2D.set_ylabel('z')
+    FigEz.ax_2D.set_xlabel('x')
+    FigEz.axcbar.set_ylabel('Ez')
+
+Here the calculation is performed by ``S4Utils.GetSlice(S, ax1=x, ax2=z, plane='xz', mode='Field')`` where we pass the simulation object ``S`` as an argument, along with the vector of coordinates ``x`` and ``z``. The ``plane`` keyword (one of ``xy,yz,xz``) indicates which coordinates to loop over in the C++ function, and the ``mode`` keyword allows to compute only the fields (``Field``), the permittivity (``Epsilon``) or both (``All``). 
+``E`` and ``H`` are len(x)*len(y)*3 arrays containing the complex electric and magnetic field amplitude. Hence, the vertical component of the electric field is simply ``np.real(E[:,:,2])``. It could be plotted using a simple ``plt.pcolormesh`` or ``plt.imshow``, however S4Utils provides a simple visualization tool that allows to plot fields and slices using :py:func:`S4Utils.S4Utils.SlicePlot`::
+
+    FigEz = S4Utils.SlicePlot(x, z ,np.real(E[:,:,2]), hcoord=s/4)
+    
+which is a simple class wrapping around a matplotlib figure instance, and hence can be customized after creation such as changing labels::
+
+    FigEz.ax_2D.set_ylabel('z')
+    FigEz.ax_2D.set_xlabel('x')
+    FigEz.axcbar.set_ylabel('Ez')
+
+Which allows us to get the 2D electric field plot below, with a symmetrized blue-white-red colormap.
+
+.. image :: MIM_EzFieldPlot.png
+
+We do the same for the permittivity profile, showing also some more customization options for the ``SlicePlot`` class::
+
+    Eps_plot = S4Utils.GetSlice(S, ax1=x, ax2=z, plane='xz', mode='Epsilon')
+    FigEps = S4Utils.SlicePlot(x, z, np.real(Eps_plot), cmap=plt.cm.bone,
+                            sym=False)
+    FigEps.ax_2D.set_ylabel('z')
+    FigEps.ax_2D.set_xlabel('x')
+    FigEps.axcbar.set_ylabel(r'$\varepsilon$')
+
+and plot the permittivity profile:
+    
+.. image :: MIM_PermittivityPlot.png
+    
+    
