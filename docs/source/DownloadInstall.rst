@@ -133,7 +133,13 @@ Then from a command prompt in the `S4` folder:
     
 .. note:: You might have to adapt the end of the Makefile to use the correct ``pip`` installer. ``pip3`` is used by default, but if you want to install S\ :sup:`4` in a particular environment, you should first activate it before running `make S4_pyext`. 
 
-In case an error occurs, it is most probably because the `MKL` libraries were installed somewhere where the compiler does not find them (*e.g* in ``/opt/``). They should be linked as (might require `sudo`):
+In case an error occurs, it is most probably because the `MKL` libraries were installed somewhere where the compiler does not find them (*e.g* in ``/opt/``). Either use the provided `.sh` script in the `bin` subdirectory of the installation directory (following `this link <https://software.intel.com/content/www/us/en/develop/documentation/mkl-linux-developer-guide/top/getting-started/setting-environment-variables/scripts-to-set-environment-variables.html>`_ ):
+
+.. code-block:: sh
+    
+    $(MKLdir)/bin/compilervars.sh
+
+Or manually link them using (might require `sudo`):
 
 .. code-block:: sh
 
