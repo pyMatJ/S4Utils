@@ -205,10 +205,10 @@ def epsZal(f, eps_w, eps_b, omega_isb, gamma_isb, omega_p, fw, f12=0.96):
     exx = fw*eps_w+(1-fw)*eps_b
     omega_tilde = np.sqrt(omega_isb**2+omega_p**2)
     
-    epszz_inv = ezz_inv-1./eps_w*omega_p**2*fw*f12/(omega_tilde**2-omega**2+2*1.0j*omega*gamma_isb)
+    epszz_inv = ezz_inv-1./eps_w*omega_p**2*fw*f12/(omega_tilde**2-omega**2-2*1.0j*omega*gamma_isb)
     eps_zz = 1./epszz_inv
     
-    eps_xx = exx - omega_p**2*fw*eps_w/(omega**2+1.0j*omega*gamma_isb)
+    eps_xx = exx - omega_p**2*fw*eps_w/(omega**2-1.0j*omega*gamma_isb)
     return eps_xx, eps_zz
     
 def epsPQW(f):

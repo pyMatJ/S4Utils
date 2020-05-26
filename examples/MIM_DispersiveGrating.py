@@ -19,7 +19,7 @@ c_const = 3e8
 # General parameters
 fmin = 12.0*1e12 ## 400cm-1 en Hz
 fmax = 50.0*1e12
-f = np.linspace(fmin, fmax, 200)
+f = np.linspace(fmin, fmax, 100)
 f0 = f/c_const*1e-6
 
 px = 3.6
@@ -29,10 +29,10 @@ NBasis = 41
 S = S4.New(Lattice = px,
            NumBasis = NBasis) ### NumBasis <=> halfnpw in RCWA
 
-ISBOn = False ## whether or not using a doped active region
+ISBOn = True ## whether or not using a doped active region
 
-# theta = np.arange(0,90,5) ### for a dispersion plot
-theta = [0] ## for a single spectrum
+theta = np.arange(0,90,5) ### for a dispersion plot
+# theta = [0] ## for a single spectrum
 
 epsAu = mat.epsAu(f)
 epsGaAs = mat.epsGaAs(f)
@@ -49,7 +49,7 @@ fw = nQW*w_well/(nQW*(w_well+w_barr)) ## filling factor
 eps_w = mat.epsGaAs(f) ## well background material
 eps_b = mat.epsAlGaAs(f, xAl=0.25) ## barrier background material
 omega_p = mat.omegaP_2D(N2D, 0.063, 10.89, w_well) ## plasma frequency 
-epsARxx, epsARzz = np.conj(mat.epsZal(f, eps_w, eps_b, omega_isb, gamma_isb, omega_p, fw))
+epsARxx, epsARzz = mat.epsZal(f, eps_w, eps_b, omega_isb, gamma_isb, omega_p, fw)
 epsAR = np.array([[epsARxx, np.zeros(len(f)), np.zeros(len(f))],
                      [np.zeros(len(f)), epsARxx, np.zeros(len(f))],
                      [np.zeros(len(f)), np.zeros(len(f)), epsARzz]])
