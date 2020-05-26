@@ -287,6 +287,8 @@ where we store in ``fw1, bw1`` the forward and backward power fluxed *at the top
 
 where we plot the reflection and transmission. We compare the computed absorption (open symbols) to :math:`1-R-T` (dashed line), and also check energy conservation (black dots). Using this, we are able to compute the absorption of light in any layer inside the simulation.
 
+..  _Tuto4-MIM:
+
 Tutorial 4: Dispersive Metal-Insulator-Metal grating with a doped quantum wells active region
 ----------------------------------------------------------------------------------------------
 
@@ -495,7 +497,7 @@ which leads e.g. for a normal incidence:
 
 .. image:: MIM_SpectrumPlot.png
 
-or a dispersion with a 5° step which runs in around 3min on a laptop:
+or a dispersion with a 5° step which runs in around one minute on a laptop:
 
 .. image:: MIM_DispersionPlot.png
 

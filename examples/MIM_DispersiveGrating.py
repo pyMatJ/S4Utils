@@ -19,7 +19,7 @@ c_const = 3e8
 # General parameters
 fmin = 12.0*1e12 ## 400cm-1 en Hz
 fmax = 50.0*1e12
-f = np.linspace(fmin, fmax, 100)
+f = np.linspace(fmin, fmax, 200)
 f0 = f/c_const*1e-6
 
 px = 3.6
@@ -29,7 +29,7 @@ NBasis = 41
 S = S4.New(Lattice = px,
            NumBasis = NBasis) ### NumBasis <=> halfnpw in RCWA
 
-ISBOn = True ## whether or not using a doped active region
+ISBOn = False ## whether or not using a doped active region
 
 theta = np.arange(0,90,5) ### for a dispersion plot
 # theta = [0] ## for a single spectrum
