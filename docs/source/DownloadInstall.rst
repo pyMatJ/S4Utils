@@ -198,6 +198,6 @@ Installing S4Utils only requires ``pip``. From a command prompt in the main S4Ut
 
 .. code-block:: sh
 
-    pip install .
+    pip install ./
     
-Should run without any trouble. The last tutorial script :ref:`Tuto4-MIM` (`download script <../../examples/MIM_DispersiveGrating.py>`_) uses some of S4Utils functions and should thus run if the installation is successful. 
+Should run without any trouble. The last tutorial script :ref:`Tuto4-MIM` (`download script <../../../examples/MIM_DispersiveGrating.py>`_) uses some of S4Utils functions and should thus run if the installation is successful. 

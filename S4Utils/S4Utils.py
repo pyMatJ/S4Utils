@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import pyvista as pv
+from matplotlib.widgets import Slider, CheckButtons
 
 def totuple(a):
     """
@@ -186,7 +187,7 @@ class SlicePlot():
     vcoord: float
         vertical coordinate for the horizontal slice
     sym: bool
-        whether to force symmetry in the colormap or leav it automated
+        whether to force symmetry in the colormap or leave it automated
     
     Notes
     -----
@@ -196,75 +197,86 @@ class SlicePlot():
     """
     def __init__(self,a1, a2, Field, cmap = plt.cm.bwr, 
                  hcoord=None, vcoord=None, sym=True):
-        a1m, a2m = np.meshgrid(a1,a2) ## len(a2) lines and len(a1) columns !
         
+        ### initial values for the 1D slices
+        self.hcoord = hcoord
+        self.vcoord = vcoord
+        ## axes
+        self.a1 = a1 ## abscissa
+        self.a2 = a2 ## ordinate
+        self.Field = Field ## 2D "field" to plot
+        self.sym = sym ## whether to force symmetrical colormap or not
+        
+        ## len(a2) lines and len(a1) columns !
+        a1m, a2m = np.meshgrid(self.a1,self.a2) 
         figratio = 5 ## general aspect ratio of the graph
         
-        self.figslice = plt.figure(constrained_layout=True) ## figure instance
+        ###############
+        ## Main figure instance containing all plots
+        self.figslice = plt.figure(constrained_layout=True) 
+        ## keep the number to associate to the GUI figure
+        self.fignum = self.figslice.number
         gs = gridspec.GridSpec(2,3, width_ratios=[figratio/20, figratio, 1], 
                                height_ratios=[1,figratio],
                                figure=self.figslice)
-        # gs2D = gridspec.GridSpecFromSubplotSpec(1,2, subplot_spec = gs[1,0],
-        #                                         width_ratios=[1,15])
         
+        ##############
         ## the 2D plot with the plane slice
-        #self.ax_2D = self.figslice.add_subplot(gs2D[0,1]) 
         self.ax_2D = self.figslice.add_subplot(gs[1,1]) 
-        if sym:
-            absmax = np.abs(Field).max() # for normalization purpose
+        ## set min and max with or without symmetry
+        if self.sym:
+            absmax = np.abs(self.Field).max() # for normalization purpose
             vmin = -absmax
             vmax = absmax
         else:
-            vmin = Field.min()
-            vmax = Field.max()
-        self.cax = self.ax_2D.pcolormesh(a1m, a2m, Field,
-                               vmin=vmin, vmax=vmax, # symmetrize
+            vmin = self.Field.min()
+            vmax = self.Field.max()
+        self.cax = self.ax_2D.pcolormesh(a1m, a2m, self.Field,
+                               vmin=vmin, vmax=vmax, # symmetric or not
                                cmap = cmap)
-        #self.axcbar = self.figslice.add_subplot(gs2D[0,0])
-        self.axcbar = self.figslice.add_subplot(gs[1,0])
+        self.axcbar = self.figslice.add_subplot(gs[1,0]) ## colorbar
         
-        ## horizontal slice at a given position along a2
-        # gs_a2slice = gridspec.GridSpecFromSubplotSpec(1,2, subplot_spec = gs[0,0],
-        #                                               width_ratios=[1,15])
-        # self.ax_a2slice = self.figslice.add_subplot(gs_a2slice[0,1], 
-        #                                             sharex=self.ax_2D)
+        ###############
+        ## *horizontal slice* at a given position along a2
         self.ax_a2slice = self.figslice.add_subplot(gs[0,1], 
                                                     sharex=self.ax_2D)
-        if vcoord is None: # if None, target center
-            a2cen = (a2.min()+a2.max())/2.
-            a2slice = np.abs(a2-a2cen).argmin()
-        else:
-            a2slice = np.abs(a2-vcoord).argmin()
-        Fieldslice = Field[a2slice,:]
-        self.ax_a2slice.plot(a1, Fieldslice)
+        if self.vcoord is None: # if None, target center
+            a2cen = (self.a2.min()+self.a2.max())/2.
+            self.vcoord = a2cen
+        a2slice = np.abs(self.a2-self.vcoord).argmin() ## index for the slice
+        Fieldslice = self.Field[a2slice,:] ## slice data
+        ## plot the data, keep reference to the line for GUI
+        self.lh, = self.ax_a2slice.plot(self.a1, Fieldslice)  
         self.ax_a2slice.set_ylabel('Field')
-        if sym:
-            absmax = np.abs(Fieldslice).max()
-            self.ax_a2slice.set_ylim([-absmax,absmax])
+        self.UpdateHSliceLims() ## properly sets the axes limits
         
+        ##############
         ## vertical slice at a given position along a1
         self.ax_a1slice = self.figslice.add_subplot(gs[1,2], 
                                                     sharey=self.ax_2D)
-        if hcoord is None: # if None target center
-            a1cen = (a1.min()+a1.max())/2.
-            a1slice = np.abs(a1-a1cen).argmin()
-        else:
-            a1slice = np.abs(a1-hcoord).argmin()
-        Fieldslice = Field[:,a1slice]
-        self.ax_a1slice.plot(Fieldslice, a2)
+        if self.hcoord is None: # if None target center
+            a1cen = (self.a1.min()+self.a1.max())/2.
+            self.hcoord = a1cen
+        a1slice = np.abs(self.a1-self.hcoord).argmin() ## index for the slice
+        Fieldslice = self.Field[:,a1slice] ## slice data
+        ## plot the data, keep reference to the line for GUI
+        self.lv, = self.ax_a1slice.plot(Fieldslice, self.a2)
         self.ax_a1slice.set_xlabel('Field')
-        if sym:
-            absmax = np.abs(Field[:,a1slice]).max()
-            self.ax_a1slice.set_xlim([-absmax,absmax])
-            
+        self.UpdateVSliceLims() ## properly sets the axes limits
+        
+        ###############
         ## show the slices on 2D graph
-        self.ax_2D.plot([a1[a1slice], a1[a1slice]], [a2.min(), a2.max()], 'k--')
-        self.ax_2D.plot([a1.min(), a1.max()], [a2[a2slice], a2[a2slice]], 'k--')
-        self.ax_2D.invert_yaxis()
+        self.lslice_h, = self.ax_2D.plot([self.a1[a1slice], self.a1[a1slice]], 
+                                         [self.a2.min(), self.a2.max()], 'k--')
+        self.lslice_v, = self.ax_2D.plot([self.a1.min(), self.a1.max()], 
+                                         [self.a2[a2slice], self.a2[a2slice]], 'k--')
+        ## flipping the vertical axis, mainly usefull for vertical slices
+        self.ax_2D.invert_yaxis() 
         self.ax_2D.axis('tight')
-        self.ax_2D.set_xlabel('ax1')
-        self.ax_2D.set_ylabel('ax2')
+        self.ax_2D.set_xlabel('ax1') ## can be changed externally
+        self.ax_2D.set_ylabel('ax2') ## can be changed externally
 
+        ## put the colorbar on the left of the figure
         self.figslice.colorbar(self.cax, cax=self.axcbar)
         self.axcbar.tick_params(axis='y', labelleft=True,
                                 labelright=False,
@@ -273,10 +285,186 @@ class SlicePlot():
         self.axcbar.set_ylabel('Field')
         self.axcbar.yaxis.set_label_position('left')
         
-        #### since constrained_layout is used tight_layout is useless
-        # self.figslice.tight_layout()
+        #######
+        ### Check button to activate/deactivate the GUI
+        axGuiBut = self.figslice.add_subplot(gs[0,2])
+        self.GUIButton = CheckButtons(axGuiBut, labels=['GUI'])
+        self.GUIButton.on_clicked(self.ShowGUI)
+        
+        plt.show()
+    
+    def UpdateHSliceLims(self):
+        """
+        Properly sets the axes limits of the horizontal slice in ax_a2slice 
+        axes to the data plotted inside the axes
 
+        Returns
+        -------
+        None.
 
+        """
+        slicedata = self.lh.get_data()[1]
+        datalims = np.array([slicedata.min(), slicedata.max()])
+        if self.sym:
+            absmax = np.abs(datalims).max()
+            datamin = -absmax
+            datamax = absmax
+        else:
+            datamin = datalims.min()
+            datamax = datalims.max()
+        self.ax_a2slice.set_ylim([datamin,datamax])
+    def UpdateVSliceLims(self):
+        """
+        Properly sets the axes limits of the vertical slice in ax_a1slice 
+        axes to the data plotted inside the axes
+
+        Returns
+        -------
+        None.
+
+        """
+        slicedata = self.lv.get_data()[0]
+        datalims = np.array([slicedata.min(), slicedata.max()])
+        if self.sym:
+            absmax = np.abs(datalims).max()
+            datamin = -absmax
+            datamax = absmax
+        else:
+            datamin = datalims.min()
+            datamax = datalims.max()
+        self.ax_a1slice.set_xlim([datamin,datamax])
+        
+    def ShowGUI(self, label):
+        """
+        Show/Hide the GUI side figure which enables changing the slice locations.
+        The figure number is used to differenciate between GUI of different 
+        figures.
+        
+        Parameters
+        ----------
+        label : List
+            List of the labels of the CheckButtons.
+
+        Returns
+        -------
+        None.
+
+        """
+        ### check if the figure exists. If yes, hide it
+        if plt.fignum_exists('GUIFig_%i'%self.fignum): 
+            plt.close('GUIFig_%i'%self.fignum)
+        ## if not, instanciate the GUISlicePlot
+        else:
+            self.GUI = GUISlicePlot(self)
+        
+class GUISlicePlot():
+    """
+    Generates an auxiliary figure to interact with a SlicePlot.
+    The GUI side plot allows to move the vertical and horizontal sliders 
+    to show slices at different locations.
+    
+    .. TODO: add a frequency input textbox to change the frequency and update plot
+    """
+    def __init__(self, parentfig):
+        """
+        Constructor for the GUISlicePlot figure.
+
+        Parameters
+        ----------
+        parentfig : :py:class:SlicePlot instance
+            The SlicePlot figure to which the GUI applies.
+
+        Returns
+        -------
+        None.
+
+        """
+        ## parent figure to interact with (SlicePlot instance)
+        self.parentfig = parentfig
+        ## the parent figure number to associate a GUI to each figure
+        parentnum = self.parentfig.fignum
+        ## The actual GUI figure
+        self.figGUI = plt.figure(figsize=(4,1), num='GUIFig_%i'%parentnum)
+        gs = gridspec.GridSpec(2,1)
+        self.ax1 = self.figGUI.add_subplot(gs[0]) ## axes for the slider1
+        self.ax2 = self.figGUI.add_subplot(gs[1]) ## axes for the slider2
+        
+        ### slider 1 along abscissa
+        ax1lims = self.parentfig.ax_2D.get_xlim() ## get axis limits
+        ax1init = self.parentfig.hcoord ## get current slice coordinate
+        ax1label = self.parentfig.ax_2D.get_xlabel() ## get current axe label
+        ## create the slider
+        self.Sl_ax1 = Slider(self.ax1, ax1label, valmin=min(ax1lims), valmax=max(ax1lims),
+                             valinit=ax1init)
+        ## callback function
+        self.Sl_ax1.on_changed(self.update_vslice)
+        ### slider 2 along ordinate
+        ax2lims = self.parentfig.ax_2D.get_ylim() ## get axis limits
+        ax2init = self.parentfig.vcoord ## get current slice coordinate
+        ax2label = self.parentfig.ax_2D.get_ylabel() ## get current axe label
+        ## create the slider
+        self.Sl_ax2 = Slider(self.ax2, ax2label, valmin=min(ax2lims), valmax=max(ax2lims),
+                       valinit=ax2init)
+        ## callback function
+        self.Sl_ax2.on_changed(self.update_hslice)
+        
+    def update_hslice(self,val):
+        """
+        Callback function for the slider along the abscissa coordinate.
+
+        Parameters
+        ----------
+        val : Float
+            Value returned by the slider object
+
+        Returns
+        -------
+        None.
+
+        """
+        coord = self.Sl_ax2.val ## cordinate from the slider value
+        self.parentfig.vcoord=coord ## set this coordinate to the parent figure
+        a2slice = np.abs(self.parentfig.a2-coord).argmin() ## get the index along the axe array
+        Fieldslice = self.parentfig.Field[a2slice,:] ## slice data
+        self.parentfig.lh.set_ydata(Fieldslice) ## set the new data to the referenced line
+        self.parentfig.figslice.canvas.draw() ## update plot
+        ### check if axes limits should be updated and update if necessary
+        axlims = self.parentfig.ax_a2slice.get_ylim() 
+        if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()<max(axlims)):
+            self.parentfig.UpdateHSliceLims() 
+        ### plot the slice position on 2D axis        
+        self.parentfig.lslice_v.set_ydata([self.parentfig.a2[a2slice], self.parentfig.a2[a2slice]])
+        
+    def update_vslice(self,val):
+        """
+        Callback function for the slider along the abscissa coordinate.
+
+        Parameters
+        ----------
+        val : Float
+            Value returned by the slider object
+
+        Returns
+        -------
+        None.
+
+        """
+        coord = self.Sl_ax1.val ## cordinate from the slider value
+        self.parentfig.hcoord = coord ## set this coordinate to the parent figure
+        a1slice = np.abs(self.parentfig.a1-coord).argmin() ## get the index along the axe array
+        Fieldslice = self.parentfig.Field[:,a1slice] ## slice data
+        self.parentfig.lv.set_xdata(Fieldslice) ## set the new data to the referenced line
+        self.parentfig.figslice.canvas.draw() ## update plot
+        ### check if axes limits should be updated and update if necessary
+        axlims = self.parentfig.ax_a1slice.get_xlim()
+        if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()<max(axlims)):
+            self.parentfig.UpdateVSliceLims()
+        ## plot the slice position on 2D axis
+        self.parentfig.lslice_h.set_xdata([self.parentfig.a1[a1slice], self.parentfig.a1[a1slice]])
+        
+        
+        
+        
 def Plot3DSlices(axes, points, Slices):
     """
     3D rendering of 3 slices in orthogonal planes.
