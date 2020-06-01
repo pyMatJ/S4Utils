@@ -430,7 +430,7 @@ class GUISlicePlot():
         self.parentfig.figslice.canvas.draw() ## update plot
         ### check if axes limits should be updated and update if necessary
         axlims = self.parentfig.ax_a2slice.get_ylim() 
-        if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()<max(axlims)):
+        if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()>max(axlims)):
             self.parentfig.UpdateHSliceLims() 
         ### plot the slice position on 2D axis        
         self.parentfig.lslice_v.set_ydata([self.parentfig.a2[a2slice], self.parentfig.a2[a2slice]])
@@ -457,7 +457,7 @@ class GUISlicePlot():
         self.parentfig.figslice.canvas.draw() ## update plot
         ### check if axes limits should be updated and update if necessary
         axlims = self.parentfig.ax_a1slice.get_xlim()
-        if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()<max(axlims)):
+        if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()>max(axlims)):
             self.parentfig.UpdateVSliceLims()
         ## plot the slice position on 2D axis
         self.parentfig.lslice_h.set_xdata([self.parentfig.a1[a1slice], self.parentfig.a1[a1slice]])

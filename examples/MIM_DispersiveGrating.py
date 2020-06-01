@@ -31,8 +31,8 @@ S = S4.New(Lattice = px,
 
 ISBOn = False ## whether or not using a doped active region
 
-theta = np.arange(0,90,5) ### for a dispersion plot
-# theta = [0] ## for a single spectrum
+# theta = np.arange(0,90,5) ### for a dispersion plot
+theta = [0] ## for a single spectrum
 
 epsAu = mat.epsAu(f)
 epsGaAs = mat.epsGaAs(f)
