@@ -13,7 +13,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-
+import alabaster
 
 # -- Project information -----------------------------------------------------
 
@@ -34,8 +34,11 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
 #              	'sphinxcontrib.fulltoc',
 #              'sphinx.ext.coverage', 
-              'sphinx.ext.napoleon']
+              'sphinx.ext.napoleon', ## support for numpy and Google style docstrings
+              'sphinx.ext.todo', ##support TODOs
+              'alabaster'] ## support Alabaster theme
 
+todo_include_todos=True # option for sphinx.ext.todo
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -52,11 +55,14 @@ master_doc = 'index'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
+html_theme_path = [alabaster.get_path()]
 html_theme = 'alabaster' # or default
 
 html_theme_options = {
 	'fixed_sidebar': 'true',
+    'show_relbars': True,
+    #'page_width': 'auto',
+    'body_max_width': 'auto'
 }
 
 html_sidebars = {
@@ -68,6 +74,7 @@ html_sidebars = {
     ]
 }
     
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".

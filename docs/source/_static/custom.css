@@ -1,0 +1,5 @@
+/* enables scroll bar when content overflows vertically*/
+div.sphinxsidebar {
+    max-height: 100%;
+    overflow-y: auto;
+}

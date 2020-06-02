@@ -11,13 +11,30 @@ import matplotlib.gridspec as gridspec
 import pyvista as pv
 from matplotlib.widgets import Slider, CheckButtons
 
+#%%  General utilities
 def totuple(a):
     """
     Converts lists and array to a tuple form. Usefull since S4 mostly accepts 
     tuples instead of numpy arrays.
+    
+    Parameters
+    ----------
+    a: array-like, list or float
+        Array-like parameter to cast to a tuple
+    
+    Returns
+    -------
+    ta: tuple
+        elements of a cast into a tuple of same 'shape'.
+        
+    Raises
+    ------
+    TypeError:
+        If the type of a cannot be cast into a tuple form, returns a
     """
     try:
-        return tuple(totuple(i) for i in a)
+        ta = tuple(totuple(i) for i in a)
+        return ta
     except TypeError:
         return a
     
@@ -39,6 +56,10 @@ def UpdateMaterials(S, Mat_list, Eps_list, fi, f0):
         frequency at which the simulation is set (reduced units)
     f0: 1Darray
         array of reduced frequencies over which the simulation runs
+    
+    Returns
+    -------
+        None.
     """
     fidx = np.abs(f0-fi).argmin()
     for ii, mat_i in enumerate(Mat_list):
@@ -52,7 +73,7 @@ def UpdateMaterials(S, Mat_list, Eps_list, fi, f0):
             print('Wrong shape for the permittivities of '+mat_i)
         S.SetMaterial(Name=mat_i, Epsilon=epsi)
         
-        
+#%% Extracting values from simulations        
 
 def GetField_xy(S, res, zs):
     """
@@ -67,6 +88,10 @@ def GetField_xy(S, res, zs):
         Note that it corresponds to *resy lines* and *resx columns*
     zs: float
         z-coordinate at which to slice the field
+    
+    Returns
+    -------
+        None.
     """
     resx, resy = res[0], res[1] 
     
@@ -87,6 +112,27 @@ def GetField_xz(S, x, y, z, ys=0.0):
     Wraps around GetField_xy which is hard-coded in the C code and thus much faster.
     *BUT* you should check that it matches with GetSlice at least once because 
     the C function GetFieldsOnGrid tends to be touchy.
+    
+    Parameters
+    ----------
+    S: S4.Simulation Object
+        Simulation to run
+    x: 1Darray
+        1Darray of x-coordinates
+    y: 1Darray
+        1Darray of y-coordinates
+    z: 1Darray
+        1Darray of z-coordinates
+    ys: float, optional
+        y-coordinate of the slice. Defaults to 0 (center of the unit cell).
+    
+    Returns
+    -------
+    E_slice: len(z) by len(x) by 3 array
+        Array of the electric field vector on the slice
+    H_slice: len(z) by len(x) by 3 array
+        Array of the magnetic field vector on the slice
+
     """
     E_slice = np.empty((len(z), len(x), 3), dtype=np.complex128)
     H_slice = np.empty((len(z), len(x), 3), dtype=np.complex128)
@@ -108,6 +154,26 @@ def GetField_yz(S, x, y, z, xs=0.0):
     Wraps around GetField_xy which is hard-coded in the C code and thus much faster.
     *BUT* you should check that it matches with GetSlice at least once because 
     the C function GetFieldsOnGrid tends to be touchy.
+
+    Parameters
+    ----------
+    S: S4.Simulation Object
+        Simulation to run
+    x: 1Darray
+        1Darray of x-coordinates
+    y: 1Darray
+        1Darray of y-coordinates
+    z: 1Darray
+        1Darray of z-coordinates
+    xs: float, optional
+        x-coordinate of the slice. Defaults to 0 (center of the unit cell).
+    
+    Returns
+    -------
+    E_slice: len(z) by len(y) by 3 array
+        Array of the electric field vector on the slice
+    H_slice: len(z) by len(y) by 3 array
+        Array of the magnetic field vector on the slice
     """
     E_slice = np.empty((len(z), len(y), 3), dtype=np.complex128)
     H_slice = np.empty((len(z), len(y), 3), dtype=np.complex128)
@@ -119,6 +185,7 @@ def GetField_yz(S, x, y, z, xs=0.0):
         E_slice[jj,:,:] = np.array(e)[:,xs_idx,:]
         H_slice[jj,:,:] = np.array(h)[:,xs_idx,:]
     return E_slice, H_slice
+
 
 
 def GetSlice(S, ax1, ax2, axs=0, plane='xz', mode='All'):
@@ -170,6 +237,74 @@ def GetSlice(S, ax1, ax2, axs=0, plane='xz', mode='All'):
         return E_slice, H_slice, Eps_slice
 
 
+def GetFieldVolume(S, x, y, z):
+    """
+    Get the electric field vector in the whole simulation volume
+
+    Parameters
+    ----------
+    S : S4.Simulation obect
+        Simulation object to run
+    x : 1Darray
+        1Darray of x-coordinates
+    y : 1Darray
+        1Darray of y-coordinates
+    z : 1Darray
+        1Darray of z-coordinates
+
+    Returns
+    -------
+    E_vol : len(x) by len(y) by len(z) by 3 array
+        Array of electric field in the simulation volume
+    H_vol : len(x) by len(y) by len(z) by 3 array
+        Array of magnetic field in the simulation volume
+
+    """
+    E_vol = np.empty((len(x), len(y), len(z), 3), dtype=np.complex128)
+    H_vol = np.empty((len(x), len(y), len(z), 3), dtype=np.complex128)
+    res = (len(x), len(y))
+    for jj, zj in enumerate(z):
+        progress = jj/len(z)*100
+        print('\r z-altitude, Progress : {:.2f}'.format(progress), end='')
+        e, h = GetField_xy(S, res, zj)
+        E_vol[:,:,jj,:] = np.array(e)
+        H_vol[:,:,jj,:] = np.array(h)
+    return E_vol, H_vol
+
+
+def GetEpsilonVolume(S, x, y, z):
+    """
+    Get the reconstructed permittivity in the whole simulation volume
+
+    Parameters
+    ----------
+    S : S4.Simulation obect
+        Simulation object to run
+    x : 1Darray
+        1Darray of x-coordinates
+    y : 1Darray
+        1Darray of y-coordinates
+    z : 1Darray
+        1Darray of z-coordinates
+
+    Returns
+    -------
+    Eps_vol : len(x) by len(y) by len(z) array
+        Array of the permittivity in the simulation volume
+    
+    """
+    Eps_vol = np.empty((len(x), len(y), len(z)), dtype=np.complex128)
+    for jj, zj in enumerate(z):
+        progress = jj/len(z)*100
+        print('\r z-altitude, Progress : {:.2f}'.format(progress), end='')
+        Eps_slice = GetSlice(S, ax1=x, ax2=y, axs=zj, plane='xy', mode='Epsilon')
+        Eps_vol[:,:,jj] = np.array(Eps_slice)
+    return Eps_vol
+    
+
+#%% 2D Slices + GUI
+
+
 class SlicePlot():
     """
     Helper to plot a slice with linecuts at arbitrary positions
@@ -182,12 +317,18 @@ class SlicePlot():
         1Darray for the *vertical* axis of the 2D plot (typically y or z)
     Field: 2Darray
         2Darray to be plotted (len(a2) x len(a1))
-    hcoord: float
-        horizontal coordinate for the vertical slice
-    vcoord: float
-        vertical coordinate for the horizontal slice
-    sym: bool
-        whether to force symmetry in the colormap or leave it automated
+    cmap: `matplotib.colors.Colormap` object
+        The colormap to pass to `matplotlib.pcolormesh` for plotting. Defaults 
+        to matplotlib.cm.bwr.
+    hcoord: float, optional
+        Horizontal coordinate for the vertical slice. Defaults to the center 
+        of the axe coordinate array given (a1).
+        of the
+    vcoord: float, optional
+        Vertical coordinate for the horizontal slice. Defaults to the center 
+        of the axe coordinate array given (a2).
+    sym: bool, optional
+        Flag to force symmetry in the colormap or leave it automated
     
     Notes
     -----
@@ -313,6 +454,7 @@ class SlicePlot():
             datamin = datalims.min()
             datamax = datalims.max()
         self.ax_a2slice.set_ylim([datamin,datamax])
+        
     def UpdateVSliceLims(self):
         """
         Properly sets the axes limits of the vertical slice in ax_a1slice 
@@ -362,23 +504,20 @@ class GUISlicePlot():
     Generates an auxiliary figure to interact with a SlicePlot.
     The GUI side plot allows to move the vertical and horizontal sliders 
     to show slices at different locations.
+
+    Parameters
+    ----------
+    parentfig : :py:class:`S4Utils.S4Utils.SlicePlot` instance
+        The SlicePlot figure to which the GUI applies.
     
-    .. TODO: add a frequency input textbox to change the frequency and update plot
+    Returns
+    -------
+        None. 
+        
+    .. todo:: 
+        Add a frequency input textbox to change the frequency and update plot
     """
     def __init__(self, parentfig):
-        """
-        Constructor for the GUISlicePlot figure.
-
-        Parameters
-        ----------
-        parentfig : :py:class:SlicePlot instance
-            The SlicePlot figure to which the GUI applies.
-
-        Returns
-        -------
-        None.
-
-        """
         ## parent figure to interact with (SlicePlot instance)
         self.parentfig = parentfig
         ## the parent figure number to associate a GUI to each figure
@@ -462,53 +601,63 @@ class GUISlicePlot():
         ## plot the slice position on 2D axis
         self.parentfig.lslice_h.set_xdata([self.parentfig.a1[a1slice], self.parentfig.a1[a1slice]])
         
-        
-        
-        
-def Plot3DSlices(axes, points, Slices):
+#%% 3D Plotting
+
+
+def Plot3DSlices(axes, DataVol, points, InteractiveSlices=False):
     """
     3D rendering of 3 slices in orthogonal planes.
     
     Parameters
     ----------
-    axes: 3-tuple
-        3-tuple of 1Darrays x,y,z for coordinates
-    points: 3-tuple
-        3-tuple of floats for the xs,ys,zs coordinates of the slices
-    Slices: 3-tuple
-        3-tuple of 2Darrays of the field sliced in xy, yz and xz planes
+    axes:
+        x, y and z 1Darray vectors of coordinates on which the data is 
+        calculated. Usually passed as (x,y,z) or np.array((x,y,z))
+        
+    DataVol: len(x) by len(y) by len(z) numpy array
+        Volumetric data in numpy array to be plotted
+        Usually obtained using :py:func:`S4Utils.S4Utils.GetFieldVolume` or 
+        :py:func:`S4Utils.S4Utils.GetEpsilonVolume` functions.
+    
+    points: tuple, list or array
+        point at which to slice the volume data. Usually (xs, ys, zs), in 
+        real space coordinates
+    
+    InteractiveSlices: bool (opt)
+        Boolean flag to activate PyVista's defaults 3D slicing. Defaults to 
+        False. 
+        
+    Returns
+    -------
+        None.
+        
+    Notes
+    -----
+        Follows https://docs.pyvista.org/examples/00-load/create-uniform-grid.html
+        and https://docs.pyvista.org/plotting/widgets.html#pyvista.WidgetHelper.add_mesh_slice_orthogonal
     """
-    ### unpack
-    x, y, z = axes
-    xs, ys, zs = points
-    Fxy, Fyz, Fxz = Slices
-    
-    xx, yy = np.meshgrid(x,y) ## in-plane coordinates (not reused)
-    zzs = np.ones(xx.shape)*zs # altitude of the slice
-    grid1 = pv.StructuredGrid(xx,yy,zzs) # make a mesh
-    grid1['values'] = (Fxy.T).ravel() # set the color. why the ravel() ?
-    xx, zz = np.meshgrid(x,z) ## vertical slice 1
-    yys = np.ones(xx.shape)*ys ## y-coord of the slice
-    grid2 = pv.StructuredGrid(xx,yys,zz)
-    grid2['values'] = (Fxz).T.ravel()
-    yy, zz = np.meshgrid(y,z)
-    xxs = np.ones(yy.shape)*xs
-    grid3 = pv.StructuredGrid(xxs,yy,zz)
-    grid3['values'] = (Fyz).T.ravel()
-    
-    absmax = max(np.abs(Fxy).max(), 
-                 np.abs(Fyz).max(),
-                 np.abs(Fxz).max())
+    xs, ys, zs = points ## coordinates for each slice
+    x, y, z = axes ## axes
+    xi = np.abs(x-xs).argmin() # index of x-coordinate of the yz slice
+    yi = np.abs(y-ys).argmin() # index of y-coordinate of the xz slice
+    zi = np.abs(z-zs).argmin() # index of z-coordinate of the xy slice
 
+    grid = pv.UniformGrid() # initialize the 3D grid
+    grid.dimensions = DataVol.shape 
+    grid.point_arrays['values']=DataVol.flatten(order='F') 
     plotter = pv.BackgroundPlotter()
-    plotter.add_mesh(grid1, cmap=plt.cm.bwr,
-                     clim=(-absmax,absmax))
-    plotter.add_mesh(grid2, cmap=plt.cm.bwr,
-                     clim=(-absmax,absmax))
-    plotter.add_mesh(grid3, cmap=plt.cm.bwr,
-                     clim=(-absmax,absmax))
-    plotter.set_viewup((1,1,-1))
-    isocam = plotter.camera.GetPosition()
-    plotter.camera.SetPosition((isocam[0], isocam[1], 0))
-    plotter.show_axes()
-    plotter.show_grid()
+    if not InteractiveSlices:
+        slices =  grid.slice_orthogonal(x=xi, y=yi, z=zi)
+        plotter.add_mesh(slices, cmap='bwr')
+    else:
+        ### this alone does the trick but I find it hard to manipulate
+        ## maybe leave as an option
+        plotter.add_mesh_slice_orthogonal(grid, cmap='bwr') 
+    ##########
+    ## plotter options
+    plotter.set_viewup((1,1,-1)) ## flip z-axis view to match S4 coordinates
+    isocam = plotter.camera.GetPosition() ## get initial camera location
+    plotter.camera.SetPosition((isocam[0], isocam[1], 0)) ## set new camera location
+    plotter.show_axes() ## show axes orientation widget
+    plotter.show_grid() ## show the grid and axes
+    
