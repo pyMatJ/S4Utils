@@ -323,13 +323,53 @@ class SlicePlot():
     hcoord: float, optional
         Horizontal coordinate for the vertical slice. Defaults to the center 
         of the axe coordinate array given (a1).
-        of the
     vcoord: float, optional
         Vertical coordinate for the horizontal slice. Defaults to the center 
         of the axe coordinate array given (a2).
     sym: bool, optional
         Flag to force symmetry in the colormap or leave it automated
     
+    Attributes
+    ----------
+    a1: 1Darray
+        1Darray for the *horizontal* axis of the 2D plot (typically x)
+    a2: 1Darray
+        1Darray for the *vertical* axis of the 2D plot (typically y or z)
+    Field: 2Darray
+        2Darray to be plotted (len(a2) x len(a1))
+    hcoord: float, optional
+        Horizontal coordinate for the vertical slice. Defaults to the center 
+        of the axe coordinate array given (a1).
+    vcoord: float, optional
+        Vertical coordinate for the horizontal slice. Defaults to the center 
+        of the axe coordinate array given (a2).
+    sym: bool, optional
+        Flag to force symmetry in the colormap or leave it automated
+    figslice: matplotlib.figure 
+        The matplotlib figure in which the plot is drawn
+    fignum: int
+        The number of the figure as retrieved by matplotlib.figure.number 
+    ax_2D: matplotlib.axes
+        The axes in which the 2D slice is drawn
+    cax: matplotlib.axes
+        The axes in which the colorbar for ax_2D drawn
+    ax_cbar: matplotlib.colorbar
+        The matplotlib.colorbar instance
+    ax_a1slice: matplotlib.axes
+        The axes in which the slice along a2 at a fixed a1 position is drawn
+    lv: matplotlib.line
+        The line of the *vertical* cut, e.g. along a2
+    ax_a2slice: matplotlib.axes
+        The axes in which the slice along a1 at a fixed a2 position is drawn
+    lh: matplotlib.line
+        The line of the *horizontal* cut, e.g. along a1
+    lslice_h: matplotlib.line
+        The line showing the position of the horizontal slice in ax_2D
+    lslice_v: matplotlib.line
+        The line showing the position of the vertical slice in ax_2D
+    GUIButton: matplotlib.widgets.CheckButtons
+        The button to hide/show the GUI
+        
     Notes
     -----
     For a 3D stack of slices one should move to Plotly instead of 
@@ -389,7 +429,7 @@ class SlicePlot():
         ## plot the data, keep reference to the line for GUI
         self.lh, = self.ax_a2slice.plot(self.a1, Fieldslice)  
         self.ax_a2slice.set_ylabel('Field')
-        self.UpdateHSliceLims() ## properly sets the axes limits
+        self._UpdateHSliceLims() ## properly sets the axes limits
         
         ##############
         ## vertical slice at a given position along a1
@@ -403,7 +443,7 @@ class SlicePlot():
         ## plot the data, keep reference to the line for GUI
         self.lv, = self.ax_a1slice.plot(Fieldslice, self.a2)
         self.ax_a1slice.set_xlabel('Field')
-        self.UpdateVSliceLims() ## properly sets the axes limits
+        self._UpdateVSliceLims() ## properly sets the axes limits
         
         ###############
         ## show the slices on 2D graph
@@ -430,11 +470,11 @@ class SlicePlot():
         ### Check button to activate/deactivate the GUI
         axGuiBut = self.figslice.add_subplot(gs[0,2])
         self.GUIButton = CheckButtons(axGuiBut, labels=['GUI'])
-        self.GUIButton.on_clicked(self.ShowGUI)
+        self.GUIButton.on_clicked(self._ShowGUI)
         
         plt.show()
     
-    def UpdateHSliceLims(self):
+    def _UpdateHSliceLims(self):
         """
         Properly sets the axes limits of the horizontal slice in ax_a2slice 
         axes to the data plotted inside the axes
@@ -455,7 +495,7 @@ class SlicePlot():
             datamax = datalims.max()
         self.ax_a2slice.set_ylim([datamin,datamax])
         
-    def UpdateVSliceLims(self):
+    def _UpdateVSliceLims(self):
         """
         Properly sets the axes limits of the vertical slice in ax_a1slice 
         axes to the data plotted inside the axes
@@ -476,7 +516,7 @@ class SlicePlot():
             datamax = datalims.max()
         self.ax_a1slice.set_xlim([datamin,datamax])
         
-    def ShowGUI(self, label):
+    def _ShowGUI(self, label):
         """
         Show/Hide the GUI side figure which enables changing the slice locations.
         The figure number is used to differenciate between GUI of different 
@@ -510,6 +550,22 @@ class GUISlicePlot():
     parentfig : :py:class:`S4Utils.S4Utils.SlicePlot` instance
         The SlicePlot figure to which the GUI applies.
     
+    Attributes
+    ----------
+    parentfig : :py:class:`S4Utils.S4Utils.SlicePlot` instance
+        The SlicePlot figure to which the GUI applies.
+    figGUI: matplotlib.figure instance
+        The matplotlib.figure in which the GUI is drawn
+    ax1: matplotlib.axes
+        The axes for the first slider linked to parentfig.a1
+    ax2: matplotlib.axes
+        The axes for the first slider linked to parentfig.a2
+    Sl_ax1: matplotlib.widgets.Slider
+        The slider linked to the parentfig.a1 axis
+    Sl_ax2: matplotlib.widgets.Slider
+        The slider linked to the parentfig.a2 axis
+    
+    
     Returns
     -------
         None. 
@@ -536,7 +592,7 @@ class GUISlicePlot():
         self.Sl_ax1 = Slider(self.ax1, ax1label, valmin=min(ax1lims), valmax=max(ax1lims),
                              valinit=ax1init)
         ## callback function
-        self.Sl_ax1.on_changed(self.update_vslice)
+        self.Sl_ax1.on_changed(self._update_vslice)
         ### slider 2 along ordinate
         ax2lims = self.parentfig.ax_2D.get_ylim() ## get axis limits
         ax2init = self.parentfig.vcoord ## get current slice coordinate
@@ -545,9 +601,9 @@ class GUISlicePlot():
         self.Sl_ax2 = Slider(self.ax2, ax2label, valmin=min(ax2lims), valmax=max(ax2lims),
                        valinit=ax2init)
         ## callback function
-        self.Sl_ax2.on_changed(self.update_hslice)
+        self.Sl_ax2.on_changed(self._update_hslice)
         
-    def update_hslice(self,val):
+    def _update_hslice(self,val):
         """
         Callback function for the slider along the abscissa coordinate.
 
@@ -570,11 +626,11 @@ class GUISlicePlot():
         ### check if axes limits should be updated and update if necessary
         axlims = self.parentfig.ax_a2slice.get_ylim() 
         if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()>max(axlims)):
-            self.parentfig.UpdateHSliceLims() 
+            self.parentfig._UpdateHSliceLims() 
         ### plot the slice position on 2D axis        
         self.parentfig.lslice_v.set_ydata([self.parentfig.a2[a2slice], self.parentfig.a2[a2slice]])
         
-    def update_vslice(self,val):
+    def _update_vslice(self,val):
         """
         Callback function for the slider along the abscissa coordinate.
 
@@ -597,7 +653,7 @@ class GUISlicePlot():
         ### check if axes limits should be updated and update if necessary
         axlims = self.parentfig.ax_a1slice.get_xlim()
         if (Fieldslice.min()<min(axlims)) or (Fieldslice.max()>max(axlims)):
-            self.parentfig.UpdateVSliceLims()
+            self.parentfig._UpdateVSliceLims()
         ## plot the slice position on 2D axis
         self.parentfig.lslice_h.set_xdata([self.parentfig.a1[a1slice], self.parentfig.a1[a1slice]])
         

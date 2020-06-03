@@ -23,6 +23,14 @@ Documentation Contents
     
     DownloadInstall
     Tutorials
+
+API Reference
+-------------
+    
+.. toctree::
+    :maxdepth: 2
+    :caption: API Reference:
+    
     MaterialFunctions
     S4Utils
     epsInterpolator

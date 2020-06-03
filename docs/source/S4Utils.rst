@@ -14,8 +14,14 @@ Basic Utility functions
 
 .. autofunction:: UpdateMaterials
 
+
+.. _S4Utils-Simulations:
+
 Simulation Functions
 ---------------------
+
+2D Slicing functions
+~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: GetField_xy
 
@@ -25,20 +31,33 @@ Simulation Functions
 
 .. autofunction:: GetSlice
 
+3D Volume functions
+~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: GetFieldVolume
 
 .. autofunction:: GetEpsilonVolume
 
 
+.. _S4Utils-Plotting:
+
 S4Utils Plotting Utilities
 --------------------------
+
+The SlicePlot class
+~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: SlicePlot
     :members:
     :member-order: bysource
 
+The GUISlicePlot class
+~~~~~~~~~~~~~~~~~~~~~~
+
 .. autoclass:: GUISlicePlot
     :members:
     :member-order: bysource
 
+3D Plotting Function
+~~~~~~~~~~~~~~~~~~~~
 .. autofunction:: Plot3DSlices

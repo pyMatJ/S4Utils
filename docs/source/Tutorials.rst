@@ -127,7 +127,7 @@ As stated in the `S4 documentation <https://web.stanford.edu/group/fan/S4/units.
 
 We can plot the results and compare to the Fresnel coefficients formula, as well as the Brewster angle:
 
-.. image :: Fresnel_plot.png
+.. image:: images/Tutorials/Tuto1_Fresnel/Fresnel_plot.png
 
 where the symbols are the results of the simulations, and the solid lines the analytical results.
 
@@ -177,7 +177,7 @@ Now two sets of calculations are possible. In the first one, we sweep over the a
     
 The rest is exactly the same as above, and we obtain the angular reflectivity and transmittivity:
 
-.. image :: FabryPerot_AnglePlot.png
+.. image:: images/Tutorials/Tuto2_FabryPerot/FabryPerot_AnglePlot.png
 
 In the second set of calculation, we fix the angle of incidence and set up a spectral range over which we run the calculation::
 
@@ -217,7 +217,7 @@ While the bulk of the code is the same, note that now we must remember to includ
     
 which quickly allows to plot the results:
 
-.. image :: FabryPerot_SpectrumPlot.png
+.. image:: images/Tutorials/Tuto2_FabryPerot/FabryPerot_SpectrumPlot.png
 
 Tutorial 3: Calculating absorption
 ----------------------------------
@@ -283,7 +283,7 @@ The reflection and transmission are computed as always at the top and bottom bou
 
 where we store in ``fw1, bw1`` the forward and backward power fluxed *at the top boundary of the layer*, and in ``fw2, bw2`` the forward and backward power fluxed *at the bottom boundary of the layer* (note the ``zOffset`` parameter set at the value of ``SlabThick``). Hence, the absorption in the layer is simply the difference between the in-flowing and out-flowing power. Thanks to the simple form of this simulation, we can quickly check the results:
 
-.. image :: Absorption_plot.png
+.. image:: images/Tutorials/Tuto3_Absorption/Absorption_plot.png
 
 where we plot the reflection and transmission. We compare the computed absorption (open symbols) to :math:`1-R-T` (dashed line), and also check energy conservation (black dots). Using this, we are able to compute the absorption of light in any layer inside the simulation.
 
@@ -495,13 +495,14 @@ Finally, we plot the results, either for a single spectrum or for a dispersion r
     
 which leads e.g. for a normal incidence:
 
-.. image:: MIM_SpectrumPlot.png
+.. image:: images/Tutorials/Tuto4_MIM/MIM_SpectrumPlot.png
 
 or a dispersion with a 5° step which runs in around one minute on a laptop:
 
-.. image:: MIM_DispersionPlot.png
+.. image:: images/Tutorials/Tuto4_MIM/MIM_DispersionPlot.png
 
-Having computed the spectum, we might want to look at the field distribution in the structure. The python API directly provides some functions to compute the electric field from a given simulation, especially `S.GetFields <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetFields>`_ and `S.GetFieldsOnGrid <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetFieldsOnGrid>`_. The first one computes the electric and magnetic field tensors at a *single* given point in space, while the second computes the electric and magnetic fields tensors on an :math:`x-y`slice at a given :math:`z` coordinate. **This function thus only returns correct values in 3D simulations**. To make the computations and visualizations easier, :py:mod:`S4Utils` provides a set of functions to extract electric and magnetic field profiles along slices and plot them in a practical visualization environment. Additionally, it also provides a way to extract the reconstructed permittivity profile using `S.GetEpsilon <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetEpsilon>`_, to help extract an image of the geometry, which can sometimes be hard to picture. This also provides a sense of the spatial resolution of the permittivity decomposition.
+Having computed the spectum, we might want to look at the field distribution in the structure. The python API directly provides some functions to compute the electric field from a given simulation, especially `S.GetFields <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetFields>`_ and `S.GetFieldsOnGrid <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetFieldsOnGrid>`_. The first one computes the electric and magnetic field tensors at a *single* given point in space, while the second computes the electric and magnetic fields tensors on an :math:`x-y`slice at a given :math:`z` coordinate. **This function thus only returns correct values in 3D simulations**. 
+To make the computations and visualizations easier, :py:mod:`S4Utils` provides a set of functions to extract electric and magnetic field profiles along slices (:ref:`S4Utils-Simulations`) and plot them in a practical visualization environment (:ref:`S4Utils-Plotting`). Additionally, it also provides a way to extract the reconstructed permittivity profile using `S.GetEpsilon <http://web.stanford.edu/group/fan/S4/python_api.html#S4.Simulation.GetEpsilon>`_, to help extract an image of the geometry, which can sometimes be hard to picture. This also provides a sense of the spatial resolution of the permittivity decomposition.
 
 Say we want to visualize the profile of the vertical component of the electric field at the 28.8 THz resonance upon normal incidence excitation. We set up the simulation::
 
@@ -543,7 +544,7 @@ which is a simple class wrapping around a matplotlib figure instance, and hence 
 
 Which allows us to get the 2D electric field plot below, with a symmetrized blue-white-red colormap.
 
-.. image :: MIM_EzFieldPlot.png
+.. image:: images/Tutorials/Tuto4_MIM/MIM_EzFieldPlot.png
 
 We do the same for the permittivity profile, showing also some more customization options for the ``SlicePlot`` class::
 
@@ -556,6 +557,6 @@ We do the same for the permittivity profile, showing also some more customizatio
 
 and plot the permittivity profile:
     
-.. image :: MIM_PermittivityPlot.png
+.. image:: images/Tutorials/Tuto4_MIM/MIM_PermittivityPlot.png
     
     

@@ -2,7 +2,7 @@
 
 .. _epsInterpolator-label:
 
-_epsInterpolator functions references
+epsInterpolator functions references
 -------------------------------------
 .. automodule:: S4Utils.epsInterpolator
    :members:
