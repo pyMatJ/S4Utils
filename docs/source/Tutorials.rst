@@ -289,8 +289,8 @@ where we plot the reflection and transmission. We compare the computed absorptio
 
 ..  _Tuto4-MIM:
 
-Tutorial 4: Dispersive Metal-Insulator-Metal grating with a doped quantum wells active region
-----------------------------------------------------------------------------------------------
+Tutorial 4: Dispersive Metal-Insulator-Metal grating 
+-----------------------------------------------------
 
 As a last tutorial, we focus on the optical properties of 1D rectangular metallic gratings under TM excitation. The example file can be found under `examples/MIM_DispersiveGrating.py <../../../examples/MIM_DispersiveGrating.py>`_. This example demonstrates the first patterning method, and shows some of the more complex S\ :sup:`4` options. In addition, it shows some of the utilities functions from :py:mod:`S4Utils` to make the python API more user friendly.
 
@@ -329,9 +329,6 @@ Here ``px`` is the simulation period, ``ff`` is the filling factor of the gratin
 
 .. warning:: As noted in various references, metallic gratings and more generally, high index contrast patterns, are generally difficult to model in RCWA. Hence, the number of Fourier coefficients to be considered has to be large to ensure a good convergence. Generally speaking, care must always be taken when setting the ``NumBasis`` parameter. 
 
-We use a boolean keyword at this level of the script to turn on or off the doping of the active region::
-    
-    ISBOn = False ## whether or not using a doped active region
 
 The reflectivity spectrum can be calculated for a single angle of incidence, or over a range of angles to get the dispersion relation of the grating modes::
 
@@ -343,26 +340,8 @@ We get the material permittivities from the :ref:`MaterialFunctions-label`::
     epsAu = mat.epsAu(f)
     epsGaAs = mat.epsGaAs(f)
 
-Note that contrary to the examples above, now we define *dispersive* materials, with a frequency-dependent permittivity. Hence, we store the value of the *complex* permittivity at each frequency of the simulation in an array. The permittivity of the active region, if doped, is defined using the Zaluzny-Nalewajko model::
-
-    #### doped region parameters
-    fisb = 31*1e12 ## isb frequency before plasma shift, Hz
-    omega_isb = 2*np.pi*fisb ## pulsation
-    gamma_isb = 0.1*fisb ## broadening
-    N2D = 7e11*1e4 ## doping
-    w_well=7.5e-9 ## well thickness
-    w_barr = 23.75e-9 ## barrier thickness 
-    nQW = 32 ## number of wells
-    fw = nQW*w_well/(nQW*(w_well+w_barr)) ## filling factor
-    eps_w = mat.epsGaAs(f) ## well background material
-    eps_b = mat.epsAlGaAs(f, xAl=0.25) ## barrier background material
-    omega_p = mat.omegaP_2D(N2D, 0.063, 10.89, w_well) ## plasma frequency 
-    epsARxx, epsARzz = np.conj(mat.epsZal(f, eps_w, eps_b, omega_isb, gamma_isb, omega_p, fw))
-    epsAR = np.array([[epsARxx, np.zeros(len(f)), np.zeros(len(f))],
-                        [np.zeros(len(f)), epsARxx, np.zeros(len(f))],
-                        [np.zeros(len(f)), np.zeros(len(f)), epsARzz]])
-
-Here the active region permittivity is a tensor with diagonal elements :math:`\varepsilon_x`, :math:`\varepsilon_y=\varepsilon_x`, :math:`\varepsilon_z`. 
+Note that contrary to the examples above, now we define *dispersive* materials, with a frequency-dependent permittivity. Hence, we store the value of the *complex* permittivity at each frequency of the simulation in an array. 
+The permittivity of a material can also be defined as a tensor, e.g. with diagonal elements :math:`\varepsilon_x`, :math:`\varepsilon_y=\varepsilon_x`, :math:`\varepsilon_z`. 
 
 .. note:: The shape of the tensor can either be ``3x3xlen(f)`` or ``len(f)x3x3`` 
 
@@ -377,22 +356,14 @@ The materials are set as usual, and we initialize the dispersive materials with 
     ### Materials
     S.SetMaterial(Name='Air', Epsilon=(1.0 + 0.0*1.0j))
     S.SetMaterial(Name='Au', Epsilon=(epsAu[0]))
+    S.SetMaterial(Name='AR', Epsilon=(epsGaAs[0]))
 
 In order to use the function that updates the dispersive materials permittivities, we need to store the material names and permittivity tensors in two lists::
 
     # material list for the update function
     Mat_list = ['Au', 'AR']
-    Eps_list = [epsAu]
+    Eps_list = [epsAu, epsGaAs]
 
-where we add the active region (AR) permittivity depending on the value of the ``ISBOn`` parameter::
-
-    if ISBOn:
-        print('Doped Active Region in')
-        S.SetMaterial(Name='AR', Epsilon=S4Utils.totuple(epsAR[:,:,0]))
-        Eps_list.append(epsAR)
-    else:
-        S.SetMaterial(Name='AR', Epsilon=(epsGaAs[0]))
-        Eps_list.append(epsGaAs)
         
 We then add the layers to the simulation::
 

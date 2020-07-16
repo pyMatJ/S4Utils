@@ -29,30 +29,11 @@ NBasis = 41
 S = S4.New(Lattice = px,
            NumBasis = NBasis) ### NumBasis <=> halfnpw in RCWA
 
-ISBOn = False ## whether or not using a doped active region
-
 # theta = np.arange(0,90,5) ### for a dispersion plot
 theta = [0] ## for a single spectrum
 
 epsAu = mat.epsAu(f)
 epsGaAs = mat.epsGaAs(f)
-
-#### doped region parameters
-fisb = 31*1e12 ## isb frequency before plasma shift, Hz
-omega_isb = 2*np.pi*fisb ## pulsation
-gamma_isb = 0.1*fisb ## broadening
-N2D = 7e11*1e4 ## doping
-w_well=7.5e-9 ## well thickness
-w_barr = 23.75e-9 ## barrier thickness 
-nQW = 32 ## number of wells
-fw = nQW*w_well/(nQW*(w_well+w_barr)) ## filling factor
-eps_w = mat.epsGaAs(f) ## well background material
-eps_b = mat.epsAlGaAs(f, xAl=0.25) ## barrier background material
-omega_p = mat.omegaP_2D(N2D, 0.063, 10.89, w_well) ## plasma frequency 
-epsARxx, epsARzz = mat.epsZal(f, eps_w, eps_b, omega_isb, gamma_isb, omega_p, fw)
-epsAR = np.array([[epsARxx, np.zeros(len(f)), np.zeros(len(f))],
-                     [np.zeros(len(f)), epsARxx, np.zeros(len(f))],
-                     [np.zeros(len(f)), np.zeros(len(f)), epsARzz]])
 
 
 DisplayThick = 0.5 ## Incident medium thickness
@@ -63,16 +44,10 @@ AuThick = 0.1 ## Gold thickness
 ### Materials
 S.SetMaterial(Name='Air', Epsilon=(1.0 + 0.0*1.0j))
 S.SetMaterial(Name='Au', Epsilon=(epsAu[0]))
-# material list for the update function
+S.SetMaterial(Name='AR', Epsilon=(epsGaAs[0]))
+    # material list for the update function
 Mat_list = ['Au', 'AR']
-Eps_list = [epsAu]
-if ISBOn:
-    print('Doped Active Region in')
-    S.SetMaterial(Name='AR', Epsilon=S4Utils.totuple(epsAR[:,:,0]))
-    Eps_list.append(epsAR)
-else:
-    S.SetMaterial(Name='AR', Epsilon=(epsGaAs[0]))
-    Eps_list.append(epsGaAs)
+Eps_list = [epsAu, epsGaAs]
     
 ### Layers
 S.AddLayer(Name='top', Thickness = DisplayThick, Material = 'Air') ## incident medium, air

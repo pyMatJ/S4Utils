@@ -63,6 +63,7 @@ def epsAlGaAs(f, xAl):
     """
     AlGaAs permittivity assuming a double 2 phonons model
     following Adachi, J. Appl. Phys. 58 R1-R29 (1985), table I
+    https://doi.org/10.1063/1.336070
     
     Parameters
     ----------
