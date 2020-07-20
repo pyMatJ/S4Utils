@@ -10,10 +10,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+import unittest.mock as mock
 import alabaster
+sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
@@ -50,6 +51,11 @@ exclude_patterns = []
 
 ## RTD expected the master file to be contents.rst
 master_doc = 'index'
+
+#### To mock the modules imported in the main project
+MOCK_MODULES = ['numpy', 'matplotlib', 'pyvista', 'S4Utils']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 # -- Options for HTML output -------------------------------------------------
 
