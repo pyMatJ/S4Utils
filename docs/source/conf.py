@@ -10,7 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os, sys, mock
+import os, sys
 from mock import Mock as MagicMock
 
 class Mock(MagicMock):
@@ -27,7 +27,7 @@ class Mock(MagicMock):
         return Mock()
     
 import alabaster
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../S4Utils/'))
 
 # -- Project information -----------------------------------------------------
 
