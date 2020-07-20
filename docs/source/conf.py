@@ -10,11 +10,24 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-import unittest.mock as mock
+import os, sys, mock
+from mock import Mock as MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return Mock()
+    def __mul__(self, other):
+        return Mock()
+    def __rmul__(self, other):
+        return Mock()
+    def __pow__(self, other):
+        return Mock()
+    def __div__(self, other):
+        return Mock()
+    
 import alabaster
-sys.path.insert(0, os.path.abspath('.'))
+#sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
@@ -53,10 +66,10 @@ exclude_patterns = []
 master_doc = 'index'
 
 #### To mock the modules imported in the main project
-MOCK_MODULES = ['numpy', 'matplotlib', 'pyvista', 'S4Utils']
+MOCK_MODULES = ['numpy', 'numpy.core', 'matplotlib.pyplot', 'matplotlib.gridspec', 'matplotlib.widgets', 'pyvista']
 for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
-
+    sys.modules[mod_name] = MagicMock()
+    
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
