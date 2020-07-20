@@ -27,7 +27,7 @@ class Mock(MagicMock):
         return Mock()
     
 import alabaster
-sys.path.insert(0, os.path.abspath('../S4Utils/'))
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
