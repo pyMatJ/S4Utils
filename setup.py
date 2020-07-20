@@ -9,5 +9,5 @@ setup(
    package_dir={"S4Utils": "S4Utils"},
    packages=['S4Utils'],
    install_requires=['numpy', 'scipy', 'matplotlib', 'pyvista'], #external packages as dependencies
-   package_data={'S4Utils': ['S4Utils/MaterialData/*']},
+   package_data={'S4Utils': ['S4Utils/examples/*']},
 )
