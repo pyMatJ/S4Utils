@@ -7,7 +7,7 @@ Created on Mon Mar 30 09:12:22 2020
 """
 import numpy as np
 
-matdata = '/mnt/Data/ODIN/Calculs/MaterialData/'
+matdata = 'MaterialData/'
 
 
 def eps_interpolator(f, fp, x1, x2, nk=False):

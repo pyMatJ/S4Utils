@@ -9,13 +9,14 @@ Various material definitions are available
 """
 
 import numpy as np
-
+from math import pi
 ##################
 ### physical constants
+
 eV = 1.6e-19
 m0 = 9.1e-31
 h_eV = 4.135e-15
-hbar_eV = h_eV/(2*np.pi)
+hbar_eV = h_eV/(2*pi)
 eps0 = 8.854e-12
 c_const = 3e8
 

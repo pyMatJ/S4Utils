@@ -6,28 +6,12 @@
 
 # -- Path setup --------------------------------------------------------------
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-import os, sys
-from mock import Mock as MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return Mock()
-    def __mul__(self, other):
-        return Mock()
-    def __rmul__(self, other):
-        return Mock()
-    def __pow__(self, other):
-        return Mock()
-    def __div__(self, other):
-        return Mock()
-    
+import os, sys    
 import alabaster
-sys.path.insert(0, os.path.abspath('../'))
+# Extensions to document with autodoc are in another directory,
+# add these directories to sys.path relative to the documentation root, 
+# and use os.path.abspath to make it absolute.
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
@@ -65,11 +49,10 @@ exclude_patterns = []
 ## RTD expected the master file to be contents.rst
 master_doc = 'index'
 
-#### To mock the modules imported in the main project
-MOCK_MODULES = ['numpy', 'numpy.core', 'matplotlib.pyplot', 'matplotlib.gridspec', 'matplotlib.widgets', 'pyvista']
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = MagicMock()
-    
+### To mock the modules imported in the main project
+### apparently better to use the autodoc built-in functionnality
+autodoc_mock_imports = ["numpy","matplotlib","pyvista"]    
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
