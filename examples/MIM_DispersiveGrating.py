@@ -29,8 +29,8 @@ NBasis = 41
 S = S4.New(Lattice = px,
            NumBasis = NBasis) ### NumBasis <=> halfnpw in RCWA
 
-# theta = np.arange(0,90,5) ### for a dispersion plot
-theta = [0] ## for a single spectrum
+theta = np.arange(0,90,5) ### for a dispersion plot
+# theta = [0] ## for a single spectrum
 
 epsAu = mat.epsAu(f)
 epsGaAs = mat.epsGaAs(f)

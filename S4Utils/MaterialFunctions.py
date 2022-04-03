@@ -168,6 +168,40 @@ def epsAlNz(f):
     eps = epsLorentzPhonon(f, wtAlNz, wlAlNz, GtAlNz, epsinfAlNz)
     return eps
 
+def epsSiN(f):
+    """
+    Dielectric properties of low stress SiN (PECVD)
+    from Cataldo et al., Optics Letters, Vol. 37 No. 20, pp. 4200-4202 (2012)
+
+    Parameters
+    ----------
+    f : 1D array
+        Frequency (Hz).
+
+    Returns
+    -------
+    eps: 1D array
+        complex permittivity (len(f))
+    """
+    eps_prime_j = np.array([7.582, 6.754, 6.601, 5.430, 4.601, 4.562])
+    eps_sec_j = np.array([0, 0.3759, 0.0041, 0.1179, 0.2073, 0.0124])
+    omega_T_j = 2*np.pi*np.array([13.913, 15.053, 24.521, 26.440, 31.724])
+    Gamma_T_j = 2*np.pi*np.array([5.810, 6.436, 2.751, 3.482, 5.948])
+    alpha_j = np.array([0.0001, 0.3427, 0.0006, 0.0002, 0.008])
+    Deps = -np.diff(eps_prime_j) - 1.0j*np.diff(eps_sec_j)
+    
+    omega = 2*np.pi*f*1e-12 ### THz is the base unit in the paper
+    
+    Gamma_j = np.zeros((len(Gamma_T_j), len(omega)), dtype=np.complex128)
+    eps = (eps_prime_j[-1] + 1.0j*eps_sec_j[-1]) * np.ones(len(omega), dtype=np.complex128)
+    for jj, gamma_j in enumerate(Gamma_T_j):
+        Gamma_j[jj] = gamma_j*np.exp(-alpha_j[jj]*((omega_T_j[jj]**2-omega**2)/(omega*gamma_j))**2)
+        eps += Deps[jj]*omega_T_j[jj]**2/(omega_T_j[jj]**2 - omega**2 - 1.0j*omega*Gamma_j[jj])
+    
+    return eps
+        
+        
+        
 #%% Model permittivity functions
 
 def epsZal(f, eps_w, eps_b, omega_isb, gamma_isb, omega_p, fw, f12=0.96):
