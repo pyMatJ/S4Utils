@@ -10,6 +10,7 @@ Various material definitions are available
 
 import numpy as np
 from math import pi
+from pathlib import Path
 ##################
 ### physical constants
 
@@ -85,7 +86,89 @@ def epsAlGaAs(f, xAl):
     eps = xAl*epsLorentzPhonon(f, wT_AlAs, wL_AlAs, gamma, eps_i)
     eps = eps+(1-xAl)*epsLorentzPhonon(f, wT_GaAs, wL_GaAs, gamma, eps_i)
     return eps
+
+def epsInP(f):
+    """
+    Parameters from Lockwood - SSCommun 136 404-409 (2005)
     
+    
+    Parameters
+    ----------
+    f : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    eps: 1D array
+        complex permittivity (len(f))
+
+    """
+    wT_InP = 303.62 * c_const * 1e2 * 2*np.pi
+    wL_InP = 345.32 * c_const * 1e2 * 2*np.pi
+    gammaL_InP = 0.95 * c_const * 1e2 * 2*np.pi
+    gammaT_InP = 2.8 * c_const * 1e2 * 2*np.pi
+    eps_inf_InP = 9.61
+    
+    eps = eps2Phonons(f, wT_InP, wL_InP, gammaT_InP, gammaT_InP, eps_inf_InP)
+    return eps
+    
+def epsInGaAs(f):
+    """
+    InGaAs permittivity 
+    NOTE: check parameter values. So far it matches my COMSOL parameters
+    
+    Parameters
+    ----------
+    f: 1D array
+        frequency (Hz)
+    
+    Returns
+    -------
+    eps: 1D array
+        complex permittivity (len(f))
+    """
+    wL1_InGaAs = 5.1549e+13
+    wT1_InGaAs = 4.7690e+13
+    g1_InGaAs = 4.1020e+11
+    wL2_InGaAs = 4.4271e+13
+    wT2_InGaAs = 4.2813e+13
+    g2_InGaAs = 3.4943e+11
+    epsInf_InGaAs = 11.6108
+
+    eps1 = eps2Phonons(f, wT1_InGaAs, wL1_InGaAs, g1_InGaAs, g1_InGaAs, epsInf_InGaAs)
+    eps2 = eps2Phonons(f, wT2_InGaAs, wL2_InGaAs, g2_InGaAs, g2_InGaAs, epsInf_InGaAs)
+    eps = eps1*eps2/epsInf_InGaAs
+    return eps
+
+def epsAlInAs(f):
+    """
+    InGaAs permittivity 
+    NOTE: check parameter values. So far it matches my COMSOL parameters
+    
+    Parameters
+    ----------
+    f: 1D array
+        frequency (Hz)
+    
+    Returns
+    -------
+    eps: 1D array
+        complex permittivity (len(f))
+    """
+
+    wL1_AlInAs = 6.7972e+13
+    wT1_AlInAs = 6.5693e+13
+    g1_AlInAs = 5.4694e+11
+    wL2_AlInAs = 4.5061e+13
+    wT2_AlInAs = 4.2539e+13
+    g2_AlInAs = 3.6462e+11
+    epsInf_AlInAs = 10.2868
+    
+    eps1 = eps2Phonons(f, wT1_AlInAs, wL1_AlInAs, g1_AlInAs, g1_AlInAs, epsInf_AlInAs)
+    eps2 = eps2Phonons(f, wT2_AlInAs, wL2_AlInAs, g2_AlInAs, g2_AlInAs, epsInf_AlInAs)
+    eps = eps1*eps2/epsInf_AlInAs
+    return eps    
+
 def epsGaNx(f): 
     """
     Gallium nitride (GaN) ordinary axis permittivity (without excitons)
@@ -200,7 +283,26 @@ def epsSiN(f):
     
     return eps
         
-        
+def epsCaF2(f):
+    """
+    CaF2 permittivity in the 150nm - 12 µm region
+    From https://refractiveindex.info/?shelf=main&book=CaF2&page=Li
+
+    Parameters
+    ----------
+    f : 1D array
+        Frequency (in Hz).
+
+    Returns
+    -------
+    eps : 1D array
+        Complex permittivity.
+
+    """
+    lbda_um = c_const/f*1e6 ## Sellmeier equation below defined for lbda in µm
+    n=(1+0.33973+0.69913/(1-(0.09374/lbda_um)**2)+0.11994/(1-(21.18/lbda_um)**2)+4.35181/(1-(38.46/lbda_um)**2))**.5
+    eps = n**2
+    return eps
         
 #%% Model permittivity functions
 
@@ -310,7 +412,7 @@ def eps2Phonons(f, wT, wL, gammaT, gammaL, eps_inf):
     eps : len(f) array
         complex permittivity 
     """    
-    eps = eps_inf*((2*np.pi*f)**2-wL**2+1.0j*gammaL*(2*np.pi*f))/((2*np.pi*f)**2-wT**2+1.0j*gammaT*(2*np.pi*f))
+    eps = eps_inf*(wL**2-(2*np.pi*f)**2-1.0j*gammaL*(2*np.pi*f))/(wT**2-(2*np.pi*f)**2-1.0j*gammaT*(2*np.pi*f))
     return eps
 
 def epsLorentzPhonon(f, wT, wL, gamma, eps_inf):

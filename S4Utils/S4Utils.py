@@ -8,7 +8,7 @@ Created on Thu Apr  2 12:05:13 2020
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import pyvista as pv
+import pyvista as pv ## might not be installed
 from matplotlib.widgets import Slider, CheckButtons
 
 #%%  General utilities
@@ -304,7 +304,6 @@ def GetEpsilonVolume(S, x, y, z):
 
 #%% 2D Slices + GUI
 
-
 class SlicePlot():
     """
     Helper to plot a slice with linecuts at arbitrary positions
@@ -414,7 +413,8 @@ class SlicePlot():
             vmax = self.Field.max()
         self.cax = self.ax_2D.pcolormesh(a1m, a2m, self.Field,
                                vmin=vmin, vmax=vmax, # symmetric or not
-                               cmap = cmap)
+                               cmap = cmap,
+                               shading = 'auto')
         self.axcbar = self.figslice.add_subplot(gs[1,0]) ## colorbar
         
         ###############
@@ -538,6 +538,8 @@ class SlicePlot():
         ## if not, instanciate the GUISlicePlot
         else:
             self.GUI = GUISlicePlot(self)
+    def savefig(self, fname, **kwargs):
+        self.figslice.savefig(fname, **kwargs)
         
 class GUISlicePlot():
     """
@@ -658,8 +660,6 @@ class GUISlicePlot():
         self.parentfig.lslice_h.set_xdata([self.parentfig.a1[a1slice], self.parentfig.a1[a1slice]])
         
 #%% 3D Plotting
-
-
 def Plot3DSlices(axes, DataVol, points, InteractiveSlices=False):
     """
     3D rendering of 3 slices in orthogonal planes.
